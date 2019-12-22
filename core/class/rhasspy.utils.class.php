@@ -84,17 +84,24 @@ class RhasspyUtils
     public function test($_siteId=null)
     {
         self::logger('_siteId: '.$_siteId);
-        $result = self::textToSpeech(null, null, $_siteId);
+        $_options = array(
+            'title' => $_siteId,
+            'message' => null,
+        );
+        $result = self::textToSpeech($_options, null, $_siteId);
         if ( isset($result['error']) ) {
             return $result;
         }
         return true;
     }
 
-    public function textToSpeech($_text=null, $_lang=null, $_siteId=null)
+    public function textToSpeech($_options=null, $_lang=null, $_siteId=null)
     {
         self::init();
-        if (!isset($_text)) {
+        if (!is_array($_options)) return;
+
+        $_text = $_options['message'];
+        if (is_null($_text)) {
             $_text = $_siteId.', ceci est un test.';
         }
         self::logger('_text: '.$_text.' | _siteId: '.$_siteId);
@@ -132,10 +139,49 @@ class RhasspyUtils
         return true;
     }
 
+    public function evalDynamicString($_string)
+    {
+        if (strpos($_string, '{') !== false AND strpos($_string, '}') !== false)
+        {
+            try {
+                preg_match_all('/{(.*?)}/', $_string, $matches);
+                foreach ($matches[0] as $expr_string)
+                {
+                    $expr = substr($expr_string, 1, -1);
+                    $exprAr = explode('|', $expr);
+                    $value = $exprAr[0];
+                    array_shift($exprAr);
+
+                    $valueString = '';
+                    foreach ($exprAr as $thisExpr)
+                    {
+                        $evaluateString = 'return ';
+                        $parts = explode(':', $thisExpr);
+                        if ( $parts[0][0] != '<' AND $parts[0][0] != '>') $parts[0] = '=='.$parts[0];
+
+                        $test = eval("return ".$value.$parts[0].";");
+                        if ($test)
+                        {
+                             $valueString = $parts[1];
+                        }
+
+                        if ($valueString != '') break;
+                    }
+
+                    $_string = str_replace($expr_string, $valueString, $_string);
+                }
+
+                return $_string;
+            } catch (Exception $e) {
+                return $_string;
+            }
+        }
+        else return $_string;
+    }
+
     public function sanitize_text($_text=null)
     {
         if (!isset($_text)) return $_text;
-
     }
 
     /* * ***************************Create Jeedom object, eqlogics, commands********************************* */
@@ -253,6 +299,20 @@ class RhasspyUtils
         $speakCmd->setType('action');
         $speakCmd->setSubType('message');
         $speakCmd->save();
+
+        //dynamicString cmd:
+        $speakCmd = $eqLogic->getCmd(null, 'dynspeak');
+        if (!is_object($speakCmd)) {
+            $speakCmd = new jeerhasspyCmd();
+            $speakCmd->setName(__('dynamic Speak', __FILE__));
+            $speakCmd->setIsVisible(1);
+        }
+        $speakCmd->setEqLogic_id($eqLogic->getId());
+        $speakCmd->setLogicalId('dynspeak');
+        $speakCmd->setType('action');
+        $speakCmd->setSubType('message');
+        $speakCmd->save();
+
     }
 
     //CALLING FUNCTIONS===================================================

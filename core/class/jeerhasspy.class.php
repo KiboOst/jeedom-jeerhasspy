@@ -124,7 +124,10 @@ class jeerhasspyCmd extends cmd {
         RhasspyUtils::logger();
         switch ($this->getLogicalId()) {
             case 'speak':
-                $this->rhasspy_say($options);
+                $this->rhasspy_speak($options);
+                break;
+            case 'dynspeak':
+                $this->rhasspy_dynamicSpeak($options);
                 break;
             case 'ask':
                 $this->rhasspy_ask($options);
@@ -132,16 +135,22 @@ class jeerhasspyCmd extends cmd {
         }
     }
 
-    public function rhasspy_say($options = array())
+    public function rhasspy_speak($options = array())
     {
         RhasspyUtils::logger($options['message'], 'info');
-        //should support siteId
-        RhasspyUtils::textToSpeech($options['message']);
+        RhasspyUtils::textToSpeech($options);
+    }
+
+    public function rhasspy_dynamicSpeak($options = array())
+    {
+        RhasspyUtils::logger($options['message'], 'info');
+        $_message = RhasspyUtils::evalDynamicString($options['message']);
+        $options['message'] = $_message;
+        RhasspyUtils::textToSpeech($options);
     }
 
     public function rhasspy_ask($options = array())
     {
         RhasspyUtils::logger($options['message'], 'info');
-        //not yet implemented!
     }
 }
