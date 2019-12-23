@@ -28,15 +28,21 @@ class RhasspyUtils
         self::logger('cleanIntents: '.$_cleanIntents);
         self::init();
 
+        config::save('assistantVersion', '0.0.0', 'jeerhasspy');
+
         $url = self::$_uri.'/api/version';
         $answer = self::_request('GET', $url);
         if ( isset($answer['error']) ) {
             $answer['error'] = 'Could not connect to Rhasspy!';
             return $answer;
-        } else {
+        }
+        if ( version_compare($answer['result'], '0.0.1', '>=' ) >= 0 ) {
             self::logger('version: '.$answer['result']);
             config::save('assistantVersion', $answer['result'], 'jeerhasspy');
             config::save('assistantDate', date('Y-m-d H:i:s'), 'jeerhasspy');
+        } else {
+            $answer['error'] = 'Invalid Rhasspy version, please check your plugin configuration.';
+            return $answer;
         }
 
         $url = self::$_uri.'/api/profile';
