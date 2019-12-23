@@ -61,7 +61,7 @@ $('#bt_loadAssistant').on('click', function () {
 })
 
 $('#bt_deleteIntents').on('click', function () {
-    bootbox.confirm('{{Êtes-vous sûr de vouloir supprimer les intentions ?', function (result) {
+    bootbox.confirm('{{Êtes-vous sûr de vouloir supprimer les intentions ?}}', function (result) {
         if (result) {
             deleteIntents()
         }
@@ -83,11 +83,10 @@ $('.jeeRhasspyDeviceCard').off('click').on('click', function () {
             handleAjaxError(request, status, error)
         },
         success: function (data) {
-            if (data.state != 'ok') {
-                $('#div_alert').showAlert({message: data.result, level: 'danger'})
-                return;
-            }
-            $('#div_alert').showAlert({message: "{{Test réussi}}", level: 'success'})
+            $('#div_alert').showAlert({
+                message: '{{Test TTS envoyé.}}',
+                level: 'success'
+            })
         }
     })
 })

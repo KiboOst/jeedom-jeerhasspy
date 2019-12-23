@@ -28,8 +28,8 @@ class RhasspyUtils
         self::logger('cleanIntents: '.$_cleanIntents);
         self::init();
 
+        //load assistant version, checking right url:
         config::save('assistantVersion', '0.0.0', 'jeerhasspy');
-
         $url = self::$_uri.'/api/version';
         $answer = self::_request('GET', $url);
         if ( isset($answer['error']) ) {
@@ -45,6 +45,7 @@ class RhasspyUtils
             return $answer;
         }
 
+        //load profile site_id
         $url = self::$_uri.'/api/profile';
         $profile = self::_request('GET', $url);
         $profile = json_decode($profile['result'], true);
@@ -57,7 +58,7 @@ class RhasspyUtils
         //Should support future satellites:
         //self::create_rhasspy_deviceEqlogic($satName, 'satDevice');
 
-
+        //load profiles, default language:
         $url = self::$_uri.'/api/profiles';
         $profiles = self::_request('GET', $url);
         $profiles = json_decode($profiles['result'], true);
@@ -65,15 +66,34 @@ class RhasspyUtils
 
         self::create_rhasspy_intentObject();
 
+        //load intents:
         $url = self::$_uri.'/api/intents';
         $jsonIntents = self::_request('GET', $url);
         self::logger('intents: '.$jsonIntents['result']);
-        $jsonIntents = json_decode($jsonIntents['result'], true);
-        $intents = [];
-        foreach($jsonIntents as $intentName => $intent) {
-            self::logger('found intent: '.$intentName);
-            array_push($intents, $intentName);
+
+        if ($jsonIntents['error'] == '500') {
+            //not /api/intents yet:
+            $url = self::$_uri.'/api/sentences';
+            $sentences = self::_request('GET', $url);
+            self::logger('sentences: '.$sentences['result']);
+            $sentences = '  '.$sentences['result'];
+            preg_match_all("/[\s][\s]\[[^\]]*\]/", $sentences, $matches);
+            $intents = [];
+            foreach($matches[0] as $match) {
+                $match = trim($match);
+                $match = str_replace(array('[', ']'), '', $match);
+                self::logger('found intent: '.$match);
+                array_push($intents, $match);
+            }
+        } else {
+            $jsonIntents = json_decode($jsonIntents['result'], true);
+            $intents = [];
+            foreach($jsonIntents as $intentName => $intent) {
+                self::logger('found intent: '.$intentName);
+                array_push($intents, $intentName);
+            }
         }
+        //create intents eqlogics:
         //$intents = ['lightsTurnOnJeedom', 'shouldNotBeThere']; //DEBUG!!!
         self::create_rhasspy_intentEqlogics($intents, $_cleanIntents);
     }
@@ -340,7 +360,11 @@ class RhasspyUtils
         if (isset($post)) curl_setopt(self::$_curlHdl, CURLOPT_POSTFIELDS, $post);
 
         $response = curl_exec(self::$_curlHdl);
-        if (curl_errno(self::$_curlHdl))
+        $httpCode = curl_getinfo(self::$_curlHdl, CURLINFO_HTTP_CODE);
+        if ($httpCode == 500) {
+            return array('result'=>null, 'error'=>'500');
+        }
+        if ($httpCode != 200)
         {
             self::logger('errno: '.curl_errno(self::$_curlHdl));
             return array('result'=>null, 'error'=>curl_errno(self::$_curlHdl));
