@@ -91,6 +91,18 @@ $('.jeeRhasspyDeviceCard').off('click').on('click', function () {
     })
 })
 
+$(function() {
+    $('select[data-l2key="callbackScenario"]').off().on('change', function () {
+        if ($(this).val() != null) {
+            var select = $('select[data-l3key="action"]')
+            if (select.val() == null) {
+              let value = select.find('option:eq(0)').val()
+              select.val(value).change()
+            }
+        }
+    })
+})
+
 function loadAssistant(_cleanIntents) {
   if (!isset(_cleanIntents)) _cleanIntents = "0"
     $.hideAlert()

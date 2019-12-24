@@ -157,7 +157,12 @@
           echo '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $eqLogic->getId() . '">';
           echo '<img src="' . $plugin->getPathImgIcon() . '"/>';
           echo '<br>';
-          echo '<span class="name">' . $eqLogic->getName(true, true) . '</span>';
+          $scenario = $eqLogic->getConfiguration('callbackScenario');
+          echo '<span class="name">';
+          if (!isset($scenario['scenario'])) {
+            echo '<sub style="font-size:22px" class="warning">•</sub>';
+          }
+          echo $eqLogic->getName(true, true).'</span>';
           echo '</div>';
         }
       ?>
