@@ -38,7 +38,7 @@ class jeerhasspy extends eqLogic {
                     {
                         $eqLogic->get_callback_scenario(null,null,null,$payload);
                     } else {
-                        $answer = config::byKey('defaultTTS', 'jeerhasspy');
+                        $answer['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
                     }
                 }
             }
