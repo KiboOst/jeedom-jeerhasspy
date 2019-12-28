@@ -123,15 +123,14 @@
               <?php
                 foreach ($eqLogics as $eqLogic) {
                   if ($eqLogic->getConfiguration('type') == 'intent') continue;
-                  $siteId = $eqLogic->getName();
-                  $siteId = str_replace('TTS-', '', $siteId);
+                  $siteId = str_replace('TTS-', '', $eqLogic->getName());
                   echo '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '"style="min-height:123px;">';
                   if ($eqLogic->getConfiguration('type') == 'masterDevice') {
                     echo '<i class="fas fa-microphone-alt"></i><br>Master<br>';
                   } else {
                     echo '<i class="fas fa-microphone"></i><br>Satellite<br>';
                   }
-                  echo '<span class="name">' . $eqLogic->getName() . '</span>';
+                  echo '<strong class="name">' . $eqLogic->getName() . '</strong>';
                   echo '</div>';
                 }
               ?>
@@ -140,9 +139,6 @@
         </div>
       </div>
     </div>
-
-
-
 
     <legend><i class="fas fa-graduation-cap"></i> {{Intentions}}</legend>
     <div class="input-group" style="margin-bottom:5px;">
@@ -157,14 +153,42 @@
           if ($eqLogic->getConfiguration('type') != 'intent') continue;
           $opacity = ($eqLogic->getIsEnable()) ? '' : 'disableCard';
           echo '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $eqLogic->getId() . '">';
-          echo '<img src="' . $plugin->getPathImgIcon() . '"/>';
-          echo '<br>';
-          $scenario = $eqLogic->getConfiguration('callbackScenario');
-          echo '<span class="name">';
-          if (!isset($scenario['scenario'])) {
-            echo '<sub style="font-size:22px" class="warning">•</sub>';
+          //callback scenario name tooltip:
+          $_confScenario = $eqLogic->getConfiguration('callbackScenario');
+          $_confScenarioName = false;
+          if (isset($_confScenario['scenario'])) {
+            $scenario = scenario::byId($_confScenario['scenario']);
+            if ($scenario) {
+              $title = ' title="';
+              //$_confScenarioName = ' title="'.$scenario->getHumanName().' -> '.$_confScenario['action'].'"';
+              $_confScenarioName = $scenario->getHumanName().' -> '.$_confScenario['action'];
+              $_tags = array();
+              if ($_confScenario['isTagIntent'] == '1') array_push($_tags, 'Intent');
+              if ($_confScenario['isTagEntities'] == '1') array_push($_tags, 'Entities');
+              if ($_confScenario['isTagSlots'] == '1') array_push($_tags, 'Slots');
+              if ($_confScenario['isTagSiteId'] == '1') array_push($_tags, 'SiteId');
+              if ($_confScenario['isTagQuery'] == '1') array_push($_tags, 'Query');
+              if ($_confScenario['isTagConfidence'] == '1') array_push($_tags, 'Confidence');
+              if ($_confScenario['isTagWakeword'] == '1') array_push($_tags, 'Wakeword');
+              if (count($_tags) > 0) {
+                $_confScenarioName .= '<br>';
+                $_confScenarioName .= implode(' | ', $_tags);
+              }
+              $_confScenarioName = $title.$_confScenarioName.'"';
+            }
           }
+
+          echo '<img src="' . $plugin->getPathImgIcon() . '"/>';
+
+          if (!isset($_confScenario['scenario'])) {
+            echo '<strong class="label label-warning cursor">Callback &nbsp;&nbsp;&nbsp; <i class="fas fa-times"></i><br></strong>';
+          } else {
+            echo '<strong class="label label-success cursor"' . $_confScenarioName .'>Callback &nbsp;&nbsp;&nbsp; <i class="fas fa-check"></i><br></strong>';
+          }
+
+          echo '<span class="name">';
           echo $eqLogic->getName(true, true).'</span>';
+
           echo '</div>';
         }
       ?>
