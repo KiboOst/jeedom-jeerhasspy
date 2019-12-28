@@ -123,7 +123,9 @@
               <?php
                 foreach ($eqLogics as $eqLogic) {
                   if ($eqLogic->getConfiguration('type') == 'intent') continue;
-                  echo '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $eqLogic->getName() . '"style="min-height:123px;">';
+                  $siteId = $eqLogic->getName();
+                  $siteId = str_replace('TTS-', '', $siteId);
+                  echo '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '"style="min-height:123px;">';
                   if ($eqLogic->getConfiguration('type') == 'masterDevice') {
                     echo '<i class="fas fa-microphone-alt"></i><br>Master<br>';
                   } else {

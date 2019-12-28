@@ -165,6 +165,24 @@ class RhasspyUtils
         return true;
     }
 
+    public function speakToAsk($_options=null, $_siteId=null)
+    {
+        self::init();
+        if (!is_array($_options)) return;
+
+        self::logger('ask data: '.$_options['askData']);
+
+        $uri = self::$_uri;
+        $url = $uri.'/api/listen-for-command?entity=askData&value='.$_options['askData'];
+        $answer = self::_request('POST', $url, $_text);
+        if ( isset($answer['error']) ) {
+            message::add('error', 'jeeRhasspy:speakToAsk error, Could not connect to Rhasspy!');
+            $answer['error'] = 'speakToAsk error, Could not connect to Rhasspy!';
+            return $answer;
+        }
+        return true;
+    }
+
     public function evalDynamicString($_string)
     {
         if (strpos($_string, '{') !== false AND strpos($_string, '}') !== false)
@@ -288,14 +306,14 @@ class RhasspyUtils
             }
             //only one master:
             if ($eqMaster) {
-                $eqMaster->setLogicalId($_deviceName);
-                $eqMaster->setName($_deviceName);
+                $eqMaster->setLogicalId('TTS-'.$_deviceName);
+                $eqMaster->setName('TTS-'.$_deviceName);
                 $eqMaster->save();
             } else {
                 $eqLogic = new jeerhasspy();
                 $eqLogic->setEqType_name('jeerhasspy');
-                $eqLogic->setLogicalId($_deviceName);
-                $eqLogic->setName($_deviceName);
+                $eqLogic->setLogicalId('TTS-'.$_deviceName);
+                $eqLogic->setName('TTS-'.$_deviceName);
                 $eqLogic->setIsVisible(0);
                 $eqLogic->setIsEnable(1);
                 $eqLogic->setObject_id($_parentObjectId);
@@ -313,11 +331,11 @@ class RhasspyUtils
         }
 
         //speak cmd:
-        $eqLogic = eqLogic::byLogicalId($_deviceName, 'jeerhasspy');
+        $eqLogic = eqLogic::byLogicalId('TTS-'.$_deviceName, 'jeerhasspy');
         $speakCmd = $eqLogic->getCmd(null, 'speak');
         if (!is_object($speakCmd)) {
             $speakCmd = new jeerhasspyCmd();
-            $speakCmd->setName(__('Speak', __FILE__));
+            $speakCmd->setName('Speak');
             $speakCmd->setIsVisible(1);
         }
         $speakCmd->setEqLogic_id($eqLogic->getId());
@@ -330,7 +348,7 @@ class RhasspyUtils
         $speakCmd = $eqLogic->getCmd(null, 'dynspeak');
         if (!is_object($speakCmd)) {
             $speakCmd = new jeerhasspyCmd();
-            $speakCmd->setName(__('dynamic Speak', __FILE__));
+            $speakCmd->setName('dynamic Speak');
             $speakCmd->setIsVisible(1);
         }
         $speakCmd->setEqLogic_id($eqLogic->getId());
@@ -338,6 +356,21 @@ class RhasspyUtils
         $speakCmd->setType('action');
         $speakCmd->setSubType('message');
         $speakCmd->save();
+
+        //ask cmd:
+        $askCmd = $eqLogic->getCmd(null, 'ask');
+        if (!is_object($askCmd)) {
+            $askCmd = new jeerhasspyCmd();
+            $askCmd->setName('Ask');
+            $askCmd->setIsVisible(1);
+        }
+        $askCmd->setEqLogic_id($eqLogic->getId());
+        $askCmd->setLogicalId('ask');
+        $askCmd->setType('action');
+        $askCmd->setSubType('message');
+        $askCmd->setDisplay('title_placeholder', 'Intent');
+        $askCmd->setDisplay('message_placeholder', 'Question');
+        $askCmd->save();
 
     }
 
