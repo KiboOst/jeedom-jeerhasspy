@@ -180,7 +180,7 @@
 
           echo '<img src="' . $plugin->getPathImgIcon() . '"/>';
 
-          if (!isset($_confScenario['scenario'])) {
+          if (!$_confScenarioName) {
             echo '<strong class="label label-warning cursor">Callback &nbsp;&nbsp;&nbsp; <i class="fas fa-times"></i><br></strong>';
           } else {
             echo '<strong class="label label-success cursor"' . $_confScenarioName .'>Callback &nbsp;&nbsp;&nbsp; <i class="fas fa-check"></i><br></strong>';
