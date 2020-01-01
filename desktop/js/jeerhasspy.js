@@ -165,6 +165,11 @@ $('.bt_openScenario').off('click').on('click', function () {
     window.open(url).focus()
 })
 
+$('.bt_logScenario').off('click').on('click', function () {
+  $('#md_modal').dialog({title: "{{Log d'exécution du scénario}}"});
+  $("#md_modal").load('index.php?v=d&modal=scenario.log.execution&scenario_id=' + $('select[data-l2key="callbackScenario"]').val()).dialog('open');
+});
+
 $(function() {
   //filter empty strings and remove 'None' group:
   intentGroups = Object.values(intentGroups)

@@ -123,11 +123,7 @@ class RhasspyUtils
     {
         if (!is_array($_options)) return;
         self::init();
-        //get either text or test:
-        $_text = $_options['message'];
-        if (is_null($_text)) {
-            $_text = $_siteId.', ceci est un test.';
-        }
+
         //get either siteId/lang or get master one:
         $_lang = null;
         $_siteId = null;
@@ -143,6 +139,13 @@ class RhasspyUtils
         if (is_null($_siteId) || $_siteId == '') {
             $_siteId = config::byKey('masterSiteId', 'jeerhasspy');
         }
+
+        //get either text or test:
+        $_text = $_options['message'];
+        if (is_null($_text)) {
+            $_text = $_siteId.', ceci est un test.';
+        }
+
         //language:
         if ($_lang && $_lang == '') {
             $_lang = null;

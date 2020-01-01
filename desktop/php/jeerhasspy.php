@@ -321,6 +321,7 @@
 
               <div class="col-sm-2">
                   <a class="btn btn-sm btn-success bt_openScenario" target="_blank" title="{{Aller sur la page du scénario.}}"><i class="fa fa-arrow-circle-right"></i> {{Scénario}}</a>
+                  <a class="btn btn-sm btn-success bt_logScenario" target="_blank" title="{{Ouvrir le log du scénario.}}"><i class="far fa-file-alt"></i> {{Log}}</a>
               </div>
           </div>
 
