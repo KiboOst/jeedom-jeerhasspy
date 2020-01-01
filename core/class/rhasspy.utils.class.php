@@ -70,7 +70,6 @@ class RhasspyUtils
         $url = self::$_uri.'/api/intents';
         $jsonIntents = self::_request('GET', $url);
         self::logger('intents: '.$jsonIntents['result']);
-
         if ($jsonIntents['error'] == '500') {
             //not /api/intents yet:
             $url = self::$_uri.'/api/sentences';
@@ -94,7 +93,6 @@ class RhasspyUtils
             }
         }
         //create intents eqlogics:
-        //$intents = ['lightsTurnOnJeedom', 'shouldNotBeThere']; //DEBUG!!!
         self::create_rhasspy_intentEqlogics($intents, $_cleanIntents);
     }
 
@@ -121,16 +119,51 @@ class RhasspyUtils
         return true;
     }
 
-    public function textToSpeech($_options=null, $_lang=null, $_siteId=null)
+    public function textToSpeech($_options=null)
     {
-        self::init();
         if (!is_array($_options)) return;
-
+        self::init();
+        //get either text or test:
         $_text = $_options['message'];
         if (is_null($_text)) {
             $_text = $_siteId.', ceci est un test.';
         }
-        self::logger('_text: '.$_text.' | _siteId: '.$_siteId);
+        //get either siteId/lang or get master one:
+        $_lang = null;
+        $_siteId = null;
+        if ($_options['title'] != '') {
+            $_string = $_options['title'];
+            if (strpos($_string, ':') !== false) {
+                $_siteId = explode(':', $_string)[0];
+                $_lang = explode(':', $_string)[1];
+            } else {
+                $_siteId = $_options['title'];
+            }
+        }
+        if (is_null($_siteId) || $_siteId == '') {
+            $_siteId = config::byKey('masterSiteId', 'jeerhasspy');
+        }
+        //language:
+        if ($_lang && $_lang == '') {
+            $_lang = null;
+        } else {
+            switch ($_lang) {
+                case 'fr':
+                    $_lang = 'fr-FR';
+                    break;
+                case 'en':
+                    $_lang = 'en-US';
+                    break;
+                case 'es':
+                    $_lang = 'es-ES';
+                    break;
+                case 'de':
+                    $_lang = 'de-DE';
+                    break;
+            }
+        }
+
+        self::logger('_text: '.$_text.' | _siteId: '.$_siteId.' | lang: '.$_lang);
 
         $uri = self::$_uri;
 
@@ -273,6 +306,11 @@ class RhasspyUtils
 
         $_parentObjectId = self::get_rhasspy_intentObject();
         foreach($_intentsNames as $intentName) {
+            //filter jeedom intent ?
+            if (config::byKey('filterJeedomIntents', 'jeerhasspy') == '1') {
+                if (substr(strtolower($intentName), -6) != 'jeedom') continue;
+            }
+
             $eqLogic = eqLogic::byLogicalId($intentName, 'jeerhasspy');
             if (!is_object($eqLogic))
             {
@@ -320,29 +358,17 @@ class RhasspyUtils
                 $eqLogic->setConfiguration('type', $_type);
                 $eqLogic->save();
             }
+            config::save('masterSiteId', $_deviceName, 'jeerhasspy');
         }
 
         if ($_type == 'satDevice') {
             $eqLogics = eqLogic::byType('jeerhasspy');
             foreach ($eqLogics as $eqLogic) {
                 if ($eqLogic->getConfiguration('type') != 'satDevice') continue;
-
             }
         }
 
-        //speak cmd:
         $eqLogic = eqLogic::byLogicalId('TTS-'.$_deviceName, 'jeerhasspy');
-        $speakCmd = $eqLogic->getCmd(null, 'speak');
-        if (!is_object($speakCmd)) {
-            $speakCmd = new jeerhasspyCmd();
-            $speakCmd->setName('Speak');
-            $speakCmd->setIsVisible(1);
-        }
-        $speakCmd->setEqLogic_id($eqLogic->getId());
-        $speakCmd->setLogicalId('speak');
-        $speakCmd->setType('action');
-        $speakCmd->setSubType('message');
-        $speakCmd->save();
 
         //dynamicString cmd:
         $speakCmd = $eqLogic->getCmd(null, 'dynspeak');
@@ -351,10 +377,37 @@ class RhasspyUtils
             $speakCmd->setName('dynamic Speak');
             $speakCmd->setIsVisible(1);
         }
+        if ($_type == 'satDevice') {
+            $speakCmd->setDisplay('title_disable', 1);
+        } else {
+            $speakCmd->setDisplay('title_placeholder', 'siteId:lang');
+        }
+        $speakCmd->setDisplay('message_placeholder', 'TTS dynamic');
         $speakCmd->setEqLogic_id($eqLogic->getId());
         $speakCmd->setLogicalId('dynspeak');
         $speakCmd->setType('action');
         $speakCmd->setSubType('message');
+        $speakCmd->setOrder(0);
+        $speakCmd->save();
+
+        //speak cmd:
+        $speakCmd = $eqLogic->getCmd(null, 'speak');
+        if (!is_object($speakCmd)) {
+            $speakCmd = new jeerhasspyCmd();
+            $speakCmd->setName('Speak');
+            $speakCmd->setIsVisible(1);
+        }
+        if ($_type == 'satDevice') {
+            $speakCmd->setDisplay('title_disable', 1);
+        } else {
+            $speakCmd->setDisplay('title_placeholder', 'siteId:lang');
+        }
+        $speakCmd->setDisplay('message_placeholder', 'TTS text');
+        $speakCmd->setEqLogic_id($eqLogic->getId());
+        $speakCmd->setLogicalId('speak');
+        $speakCmd->setType('action');
+        $speakCmd->setSubType('message');
+        $speakCmd->setOrder(1);
         $speakCmd->save();
 
         //ask cmd:
@@ -370,6 +423,7 @@ class RhasspyUtils
         $askCmd->setSubType('message');
         $askCmd->setDisplay('title_placeholder', 'Intent');
         $askCmd->setDisplay('message_placeholder', 'Question');
+        $speakCmd->setOrder(2);
         $askCmd->save();
 
     }

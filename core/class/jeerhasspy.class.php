@@ -30,6 +30,7 @@ class jeerhasspy extends eqLogic {
             RhasspyUtils::logger('POST: '.$input);
             $payload = json_decode($input, true);
             $_answerToRhasspy = array('speech' => array('text' => ''));
+            //intent received:
             if (isset($payload['intent']) && isset($payload['intent']['name'])) {
                 $intentName = $payload['intent']['name'];
                 if ($intentName != '') {
@@ -71,10 +72,21 @@ class jeerhasspy extends eqLogic {
                         }
                     }
                 }
+                //always answer to rhasspy:
+                header('Content-Type: application/json');
+                echo json_encode($_answerToRhasspy);
+                return;
             }
-            header('Content-Type: application/json');
-            echo json_encode($_answerToRhasspy);
-         }
+            //wakeword received:
+            if (isset($payload['wakewordId'])) {
+                if (config::byKey('setWakeVariables', 'jeerhasspy') == '1') {
+                    RhasspyUtils::logger('Set variables: rhasspyWakeWord | rhasspyWakeSiteId: '.$payload['wakewordId'].' | '.$payload['siteId']);
+                    scenario::setData('rhasspyWakeWord', $payload['wakewordId']);
+                    scenario::setData('rhasspyWakeSiteId', $payload['siteId']);
+                }
+                return;
+            }
+        }
     }
 
     //Get intent eq scenario:

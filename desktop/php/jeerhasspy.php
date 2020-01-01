@@ -7,11 +7,78 @@
   $plugin = plugin::byId('jeerhasspy');
   sendVarToJS('eqType', $plugin->getId());
   $eqLogics = eqLogic::byType($plugin->getId());
+
+  //get intents groups for panels and autocomplete:
+  $intentGroups = array();
+  $intents = array();
+  $intents['None'] = array();
+  array_push($intentGroups, 'None');
+
+  foreach ($eqLogics as $eqLogic) {
+    if ($eqLogic->getConfiguration('type') != 'intent') continue;
+    $group = $eqLogic->getConfiguration('group');
+    $intents[$group] = array();
+    array_push($intentGroups, $group);
+  }
+  $intentGroups = array_unique($intentGroups);
+  sendVarToJS('intentGroups', $intentGroups);
+
+  foreach ($eqLogics as $eqLogic) {
+    if ($eqLogic->getConfiguration('type') != 'intent') continue;
+    $group = $eqLogic->getConfiguration('group');
+    if ($group == null) $group = 'None';
+    array_push($intents[$group], $eqLogic);
+  }
+
   $scenarios = scenario::all();
 
   $_rhasspyUrl = config::byKey('rhasspyAddr', 'jeerhasspy').':'.config::byKey('rhasspyPort', 'jeerhasspy');
   $_internalURL = network::getNetworkAccess('internal') . '/core/api/jeeApi.php?plugin=jeerhasspy&apikey=' . jeedom::getApiKey($plugin->getId()) . '&plugin=jeerhasspy&type=jeerhasspy';
   $_externalURL = network::getNetworkAccess('external') . '/core/api/jeeApi.php?plugin=jeerhasspy&apikey=' . jeedom::getApiKey($plugin->getId()) . '&plugin=jeerhasspy&type=jeerhasspy';
+
+  function getIntentDisplayCard($intent, $plugin) {
+    $opacity = ($intent->getIsEnable()) ? '' : 'disableCard';
+    $_div = '';
+    $_div .= '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $intent->getId() . '">';
+    //callback scenario name tooltip:
+    $_confScenario = $intent->getConfiguration('callbackScenario');
+    $_confScenarioName = false;
+    if (isset($_confScenario['scenario'])) {
+      $scenario = scenario::byId($_confScenario['scenario']);
+      if ($scenario) {
+        $title = ' title="';
+        //$_confScenarioName = ' title="'.$scenario->getHumanName().' -> '.$_confScenario['action'].'"';
+        $_confScenarioName = $scenario->getHumanName().' -> '.$_confScenario['action'];
+        $_tags = array();
+        if ($_confScenario['isTagIntent'] == '1') array_push($_tags, 'Intent');
+        if ($_confScenario['isTagEntities'] == '1') array_push($_tags, 'Entities');
+        if ($_confScenario['isTagSlots'] == '1') array_push($_tags, 'Slots');
+        if ($_confScenario['isTagSiteId'] == '1') array_push($_tags, 'SiteId');
+        if ($_confScenario['isTagQuery'] == '1') array_push($_tags, 'Query');
+        if ($_confScenario['isTagConfidence'] == '1') array_push($_tags, 'Confidence');
+        if ($_confScenario['isTagWakeword'] == '1') array_push($_tags, 'Wakeword');
+        if (count($_tags) > 0) {
+          $_confScenarioName .= '<br>';
+          $_confScenarioName .= implode(' | ', $_tags);
+        }
+        $_confScenarioName = $title.$_confScenarioName.'"';
+      }
+    }
+
+    $_div .= '<img src="' . $plugin->getPathImgIcon() . '"/>';
+
+    if (!$_confScenarioName) {
+      $_div .= '<strong class="label label-warning cursor">Callback &nbsp;&nbsp;&nbsp; <i class="fas fa-times"></i><br></strong>';
+    } else {
+      $_div .= '<strong class="label label-success cursor"' . $_confScenarioName .'>Callback &nbsp;&nbsp;&nbsp; <i class="fas fa-check"></i><br></strong>';
+    }
+
+    $_div .= '<span class="name">';
+    $_div .= $intent->getName(true, true).'</span>';
+
+    $_div .= '</div>';
+    return $_div;
+  }
 ?>
 
 <div class="row row-overflow">
@@ -108,7 +175,7 @@
       ?>
     </div>
 
-    <div class="panel-group">
+    <div id="devicesPanel" class="panel-group">
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title">
@@ -141,57 +208,50 @@
     </div>
 
     <legend><i class="fas fa-graduation-cap"></i> {{Intentions}}</legend>
+
     <div class="input-group" style="margin-bottom:5px;">
-      <input class="form-control roundedLeft" placeholder="{{Rechercher}}" id="in_searchEqlogic"/>
+      <input class="form-control roundedLeft" placeholder="{{Rechercher}}" id="input_searchEqlogic"/>
       <div class="input-group-btn">
-        <a id="bt_resetSearch" class="btn roundedRight" style="width:30px"><i class="fas fa-times"></i> </a>
+        <a id="bt_resetSearch" class="btn" style="width:30px"><i class="fas fa-times"></i>
+        </a><a class="btn" id="bt_openAll"><i class="fas fa-folder-open"></i>
+        </a><a class="btn roundedRight" id="bt_closeAll"><i class="fas fa-folder"></i></a>
       </div>
     </div>
-    <div id="intentsContainer" class="eqLogicThumbnailContainer">
+    <div id="intentsContainer">
+      <div id="intentsPanels" class="panel-group" id="accordionIntent">
       <?php
-        foreach ($eqLogics as $eqLogic) {
-          if ($eqLogic->getConfiguration('type') != 'intent') continue;
-          $opacity = ($eqLogic->getIsEnable()) ? '' : 'disableCard';
-          echo '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $eqLogic->getId() . '">';
-          //callback scenario name tooltip:
-          $_confScenario = $eqLogic->getConfiguration('callbackScenario');
-          $_confScenarioName = false;
-          if (isset($_confScenario['scenario'])) {
-            $scenario = scenario::byId($_confScenario['scenario']);
-            if ($scenario) {
-              $title = ' title="';
-              //$_confScenarioName = ' title="'.$scenario->getHumanName().' -> '.$_confScenario['action'].'"';
-              $_confScenarioName = $scenario->getHumanName().' -> '.$_confScenario['action'];
-              $_tags = array();
-              if ($_confScenario['isTagIntent'] == '1') array_push($_tags, 'Intent');
-              if ($_confScenario['isTagEntities'] == '1') array_push($_tags, 'Entities');
-              if ($_confScenario['isTagSlots'] == '1') array_push($_tags, 'Slots');
-              if ($_confScenario['isTagSiteId'] == '1') array_push($_tags, 'SiteId');
-              if ($_confScenario['isTagQuery'] == '1') array_push($_tags, 'Query');
-              if ($_confScenario['isTagConfidence'] == '1') array_push($_tags, 'Confidence');
-              if ($_confScenario['isTagWakeword'] == '1') array_push($_tags, 'Wakeword');
-              if (count($_tags) > 0) {
-                $_confScenarioName .= '<br>';
-                $_confScenarioName .= implode(' | ', $_tags);
-              }
-              $_confScenarioName = $title.$_confScenarioName.'"';
-            }
+        $i = 0;
+        $div = '';
+        foreach ($intentGroups as $group) {
+          if ($group == '') continue;
+          $c = count($intents[$group]);
+          if ($c == 0) continue;
+          $groupName = $group;
+          if ($group == 'None') $groupName = "{{Aucun}}";
+          $div .= '<div class="panel panel-default">';
+          $div .= '<div class="panel-heading">';
+          $div .= '<h3 class="panel-title">';
+          $div .= '<a class="accordion-toggle" data-toggle="collapse" data-parent="" aria-expanded="false" href="#config_' . $i . '">' . $groupName . ' - ';
+          $div .= $c. ($c > 1 ? ' intentions' : ' intention').'</a>';
+          $div .= '</h3>';
+          $div .= '</div>';
+          $div .= '<div id="config_' . $i . '" class="panel-collapse collapse">';
+          $div .= '<div class="panel-body">';
+          $div .= '<div class="eqLogicThumbnailContainer">';
+          foreach ($intents[$group] as $intent) {
+            $_div = getIntentDisplayCard($intent, $plugin);
+            $div .= $_div;
           }
-
-          echo '<img src="' . $plugin->getPathImgIcon() . '"/>';
-
-          if (!$_confScenarioName) {
-            echo '<strong class="label label-warning cursor">Callback &nbsp;&nbsp;&nbsp; <i class="fas fa-times"></i><br></strong>';
-          } else {
-            echo '<strong class="label label-success cursor"' . $_confScenarioName .'>Callback &nbsp;&nbsp;&nbsp; <i class="fas fa-check"></i><br></strong>';
-          }
-
-          echo '<span class="name">';
-          echo $eqLogic->getName(true, true).'</span>';
-
-          echo '</div>';
+          $div .= '</div>';
+          $div .= '</div>';
+          $div .= '</div>';
+          $div .= '</div>';
+          $i += 1;
         }
+        $div .= '</div>';
+        echo $div;
       ?>
+      </div>
     </div>
   </div>
 
@@ -216,32 +276,40 @@
       <fieldset>
           <legend><i class="fas fa-microphone"></i> {{Intention}}</legend>
           <div class="form-group">
-              <label class="col-sm-1 control-label">{{Nom}}</label>
+              <label class="col-sm-2 control-label">{{Nom}}</label>
               <div class="col-sm-3">
                   <input type="text" class="eqLogicAttr form-control" id="intentId" data-l1key="id" style="display : none;" />
-                  <input type="text" class="eqLogicAttr form-control input-sm" id="intentName" data-l1key="name"  readonly/>
+                  <input type="text" class="eqLogicAttr form-control" id="intentName" data-l1key="name"  readonly/>
               </div>
               <div class="col-sm-3">
                 <label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isEnable" checked/>{{Activer}}</label>
               </div>
           </div>
 
+          <div class="form-group">
+            <label class="col-sm-2 control-label" >{{Groupe}}</label>
+            <div class="col-sm-3">
+              <input class="form-control eqLogicAttr" data-l1key="configuration" data-l2key="group" type="text" placeholder="{{Groupe de l'Intention}}"/>
+            </div>
+          </div>
+
           <legend><i class="fas fa-cogs"></i> {{Callback Scenario}}</legend>
           <div class="form-group">
-              <label class="col-sm-1 control-label">{{Scenario}}</label>
+              <label class="col-sm-2 control-label">{{Scenario}}</label>
               <div class="col-sm-4">
-                  <select class="eqLogicAttr form-control input-sm" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="scenario">
+                  <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="scenario">
                       <option value="-1">{{None}}</option>
                       <?php
                       foreach ($scenarios as $scenario) {
-                        echo '<option value="'.$scenario->getId().'">'.$scenario->getName().'</option>';
+                        echo '<option value="'.$scenario->getId().'">'.$scenario->getHumanName().'</option>';
                       }
                       ?>
                   </select>
               </div>
+
               <label class="col-sm-1 control-label">{{Action}}</label>
               <div class="col-sm-2">
-                  <select class="eqLogicAttr form-control input-sm" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="action">
+                  <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="action">
                       <option value="start">{{Start}}</option>
                       <option value="startsync">{{Start (sync)}}</option>
                       <option value="stop">{{Stop}}</option>
@@ -250,18 +318,18 @@
                       <option value="resetRepeatIfStatus">{{Remise à zero des SI}}</option>
                   </select>
               </div>
-              <label class="col-sm-1 control-label">{{Tags}}</label>
+
               <div class="col-sm-2">
-                  <textarea class="eqLogicAttr" style="height: 30px;width: 236px;" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="user_tags"></textarea>
+                  <a class="btn btn-sm btn-success bt_openScenario" target="_blank" title="{{Aller sur la page du scénario.}}"><i class="fa fa-arrow-circle-right"></i> {{Scénario}}</a>
               </div>
-              <div class="col-sm-4"></div>
           </div>
 
           <div class="form-group">
-              <label class="col-sm-1 control-label">{{Tags}}
+              <label class="col-sm-2 control-label">{{Tags Rhasspy}}
                 <sup><i class="fas fa-question-circle" title="{{Sélectionnez les informations de l'Intention passées sous forme de tag.}}"></i></sup>
               </label>
-              <div class="col-sm-5">
+
+              <div class="col-sm-4">
                 <div class="col-sm-12">
                   <div class="callbackScenarioTags">
                     <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagIntent"> {{#intent#}}
@@ -297,6 +365,13 @@
                     <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagWakeword"> {{#wakeword#}}
                   </div>
                 </div>
+              </div>
+
+              <label class="col-sm-1 control-label">{{Tags}}
+                <sup><i class="fas fa-question-circle" title="{{Ajoutez ici des tags utilisateur lors de l'éxécution du scénario (#tagName#=tagValue).}}"></i></sup>
+              </label>
+              <div class="col-sm-5">
+                  <textarea class="eqLogicAttr" style="height: 30px;width: 95%;" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="user_tags" placeholder="#tagName#=tagValue"></textarea>
               </div>
           </div>
 

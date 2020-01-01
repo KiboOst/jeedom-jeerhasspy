@@ -44,6 +44,15 @@ if (!isConnect()) {
                 <input type="checkbox" class="configKey" data-l1key="filterJeedomIntents" checked/>
             </div>
         </div>
+
+        <div class="form-group">
+            <label class="col-lg-4 control-label" >{{Variables rhasspyWakeWord / rhasspyWakeSiteId}}
+                <sup><i class="fas fa-question-circle" title="{{Assigne ces deux variables avec le wakeId et le siteId ayant déclenché le wakeword.}}"></i></sup>
+            </label>
+            <div class="col-lg-4">
+                <input type="checkbox" class="configKey" data-l1key="setWakeVariables" checked/>
+            </div>
+        </div>
     </fieldset>
 </form>
 

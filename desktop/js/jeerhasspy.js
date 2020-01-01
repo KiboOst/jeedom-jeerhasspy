@@ -14,17 +14,74 @@
  * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
  */
 
-$('.accordion-toggle').off('click').on('click', function () {
+//search:
+$(function() {
+  setTimeout(function() {
+    if (getDeviceType()['type'] == 'desktop') $('#input_searchEqlogic').focus()
+    $("body").on('keydown','#input_searchEqlogic', function(event) {
+      if(event.key == 'Escape') {
+        $(this).val('').keyup()
+      }
+    })
+  }, 500)
+})
+
+$('#input_searchEqlogic').keyup(function () {
+  var search = $(this).value()
+  if (search == '') {
+    $('#intentsContainer .panel-collapse.in').closest('.panel').find('.accordion-toggle').click()
+    $('#intentsContainer .eqLogicDisplayCard').show()
+    $('#intentsContainer .eqLogicThumbnailContainer').packery()
+    return
+  }
+  search = normTextLower(search)
+  $('.panel-collapse').attr('data-show',0)
+  $('.eqLogicDisplayCard').hide()
+  $('.eqLogicDisplayCard .name').each(function() {
+    var text = $(this).text()
+    text = normTextLower(text)
+    if (text.indexOf(search) >= 0) {
+      $(this).closest('.eqLogicDisplayCard').show();
+      $(this).closest('.panel-collapse').attr('data-show',1)
+    }
+  })
+  $('#intentsContainer .panel-collapse[data-show=1]').collapse('show')
+  $('#intentsContainer .panel-collapse[data-show=0]').collapse('hide')
+  $('#intentsContainer .eqLogicThumbnailContainer').packery()
+})
+
+$('#bt_openAll').off('click').on('click', function () {
+  $("#intentsContainer .accordion-toggle[aria-expanded='false']").each(function() {
+    $(this).click()
+    $(this).closest('.panel').find('.eqLogicThumbnailContainer').packery()
+  })
+})
+$('#bt_closeAll').off('click').on('click', function () {
+  $("#intentsContainer .accordion-toggle[aria-expanded='true']").each(function() {
+    $(this).click()
+    $(this).closest('.panel').find('.eqLogicThumbnailContainer').packery()
+  })
+})
+$('#bt_resetSearch').off('click').on('click', function () {
+  $('#input_searchEqlogic').val('')
+  $('#input_searchEqlogic').keyup()
+})
+
+
+//panels:
+$('#devicesPanel .accordion-toggle').off('click').on('click', function () {
   setTimeout(function(){
     $('#devicesContainer .eqLogicThumbnailContainer').packery()
   },100)
 });
-
-$('#bt_resetSearch').off('click').on('click', function () {
-  $('#in_searchEqlogic').val('')
-  $('#in_searchEqlogic').keyup()
+$('#intentsPanels .accordion-toggle').off('click').on('click', function () {
+  $thisContainer = $(this).closest('.panel').find('.eqLogicThumbnailContainer')
+  setTimeout(function() {
+       $thisContainer.packery()
+    }, 100)
 })
 
+//ui:
 $('#bt_loadAssistant').on('click', function () {
     bootbox.prompt({
         title: '<i class="fa fa-exclamation-triangle warning"></i> {{Importation de l\'assistant}}',
@@ -101,6 +158,22 @@ $(function() {
             }
         }
     })
+})
+
+$('.bt_openScenario').off('click').on('click', function () {
+    var url = 'index.php?v=d&p=scenario&id=' + $('select[data-l2key="callbackScenario"]').val()
+    window.open(url).focus()
+})
+
+$(function() {
+  //filter empty strings and remove 'None' group:
+  intentGroups = Object.values(intentGroups)
+  intentGroups = intentGroups.filter(Boolean)
+  intentGroups.shift()
+  $('.eqLogicAttr[data-l2key=group]').autocomplete({
+    source: intentGroups,
+    minLength: 1
+  })
 })
 
 function loadAssistant(_cleanIntents) {
