@@ -67,6 +67,58 @@ $('#bt_resetSearch').off('click').on('click', function () {
   $('#input_searchEqlogic').keyup()
 })
 
+//configure:
+$('#bt_configureIntRemote').off('click').on('click', function () {
+  	$.hideAlert()
+      bootbox.confirm({
+        title: '<i class="fa fa-exclamation-triangle warning"></i> {{Configuration de l\'event <i>Intent Recognized</i>}}',
+        message: '<p>{{Cette action va modifier votre profil sur Rhasspy et redémarrer le service.}}</p>',
+        callback: function (result) {
+          if (result) {
+            	_url = $('input[data-urlType="url_int"]').val()
+            	configureRemoteHandle(_url)
+          }
+        }
+      })
+})
+$('#bt_configureExtRemote').off('click').on('click', function () {
+    $.hideAlert()
+      bootbox.confirm({
+        title: '<i class="fa fa-exclamation-triangle warning"></i> {{Configuration de l\'event <i>Intent Recognized</i>}}',
+        message: '<p>{{Cette action va modifier votre profil sur Rhasspy et redémarrer le service.}}</p>',
+        callback: function (result) {
+          if (result) {
+              _url = $('input[data-urlType="url_ext"]').val()
+              configureRemoteHandle(_url)
+          }
+        }
+      })
+})
+$('#bt_configureWakeEvent').off('click').on('click', function () {
+  	$.hideAlert()
+  	bootbox.prompt({
+        title: '<i class="fa fa-exclamation-triangle warning"></i> {{Configuration de l\'event <i>Wakeword Detected</i>}}',
+        message: '<p>{{Cette action va modifier votre profil sur Rhasspy et redémarrer le service.}}</p>',
+        inputType: 'select',
+        inputOptions: [
+            {
+                text: '{{Utiliser l\'url interne}}',
+                value: 'url_int',
+            },
+            {
+                text: '{{Utiliser l\'url externe}}',
+                value: 'url_ext',
+            }
+        ],
+        value: 'url_int',
+        callback: function (result) {
+            if (result == 'url_int' || result == 'url_ext') {
+                configureWakeEvent(result)
+            }
+        }
+    })
+})
+
 
 //panels:
 $('#devicesPanel .accordion-toggle').off('click').on('click', function () {
@@ -82,7 +134,7 @@ $('#intentsPanels .accordion-toggle').off('click').on('click', function () {
 })
 
 //ui:
-$('#bt_loadAssistant').on('click', function () {
+$('#bt_loadAssistant').off('click').on('click', function () {
     bootbox.prompt({
         title: '<i class="fa fa-exclamation-triangle warning"></i> {{Importation de l\'assistant}}',
         inputType: 'select',
@@ -117,7 +169,7 @@ $('#bt_loadAssistant').on('click', function () {
     })
 })
 
-$('#bt_deleteIntents').on('click', function () {
+$('#bt_deleteIntents').off('click').on('click', function () {
     bootbox.confirm('{{Êtes-vous sûr de vouloir supprimer les intentions ?}}', function (result) {
         if (result) {
             deleteIntents()
@@ -199,8 +251,7 @@ function loadAssistant(_cleanIntents) {
                 $('#div_alert').showAlert({message: data.result, level: 'danger'})
                 return;
             }
-            url = window.location.href
-            loadPage(url);
+            loadPage(window.location.href)
         }
     })
 }
@@ -224,6 +275,51 @@ function deleteIntents() {
             }
             $('#intentsContainer').empty()
             $('#div_alert').showAlert({message: '{{Suppression réussie, veuillez recharger la page (F5).}}', level: 'success'})
+        }
+    })
+}
+
+function configureWakeEvent(_url) {
+  	if (!isset(_url)) _url = 'url_int'
+  	_url = $('input[data-urlType="'+_url+'"]').val()
+    $.ajax({
+        url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
+        data: {
+            action: "configureWakeEvent",
+            url: _url,
+        },
+        dataType: 'json',
+        error: function (request, status, error) {
+            handleAjaxError(request, status, error)
+        },
+        success: function (data) {
+            if (data.state != 'ok') {
+                $('#div_alert').showAlert({message: data.result, level: 'danger'})
+                return;
+            }
+            $('#div_alert').showAlert({message: '{{Configuration de votre Rhasspy réussie.}}', level: 'success'})
+        }
+    })
+}
+
+function configureRemoteHandle(_url) {
+  	if (!isset(_url)) _url = 'url_int'
+    $.ajax({
+        url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
+        data: {
+            action: "configureRemoteHandle",
+            url: _url,
+        },
+        dataType: 'json',
+        error: function (request, status, error) {
+            handleAjaxError(request, status, error)
+        },
+        success: function (data) {
+            if (data.state != 'ok') {
+                $('#div_alert').showAlert({message: data.result, level: 'danger'})
+                return;
+            }
+            $('#div_alert').showAlert({message: '{{Configuration de votre Rhasspy réussie.}}', level: 'success'})
         }
     })
 }

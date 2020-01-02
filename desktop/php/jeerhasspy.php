@@ -127,6 +127,9 @@
                           <div class="col-sm-2">
                               <input type="text" class="form-control" readonly value="<?php echo config::byKey('assistantDate', 'jeerhasspy'); ?>"/>
                           </div>
+                          <div class="col-sm-6">
+                        	<span></span>
+                          </div>
                           <div class="col-sm-2">
                               <a href="<?php echo $_rhasspyUrl; ?>" class="btn btn-sm btn-success" target="_blank" title="{{Ouvrir l'interface de Rhasspy.}}"><i class="fa fa-arrow-circle-right"></i> {{Rhasspy}}</a>
                           </div>
@@ -154,16 +157,33 @@
                             <sup><i class="fas fa-question-circle" title="{{URL interne (Jeedom et Rhasspy sur le même réseau) à copier dans Rhasspy, onglet Settings.}}"></i></sup>
                           </label>
                           <div class="col-sm-8 callback">
-                            <input type="text" class="form-control" data-l1key="name" readonly value="<?php echo $_internalURL; ?>"/>
+                            <input type="text" class="form-control" data-urlType="url_int" readonly value="<?php echo $_internalURL; ?>"/>
+                          </div>
+                          <div class="col-sm-2">
+                              <a id="bt_configureIntRemote" class="btn btn-sm btn-warning" target="_blank" title="{{Configurer votre profil Rhasspy.}}"><i class="fas fa-users-cog"></i> {{Configurer}}</a>
                           </div>
                         </div>
+                              
                         <div class="form-group">
                           <label class="col-sm-2 control-label">{{URL externe}}
                             <sup><i class="fas fa-question-circle" title="{{URL externe (Jeedom et Rhasspy sur deux réseaux différents) à copier dans Rhasspy, onglet Settings.}}"></i></sup>
                           </label>
                           <div class="col-sm-8 callback">
-                            <input type="text" class="form-control" data-l1key="name" readonly value="<?php echo $_externalURL; ?>"/>
+                            <input type="text" class="form-control" data-urlType="url_ext" readonly value="<?php echo $_externalURL; ?>"/>
                           </div>
+                          <div class="col-sm-2">
+                              <a id="bt_configureExtRemote" class="btn btn-sm btn-warning" target="_blank" title="{{Configurer votre profil Rhasspy.}}"><i class="fas fa-users-cog"></i> {{Configurer}}</a>
+                          </div>
+                        </div>
+                              
+                        <div class="form-group">
+                          <label class="col-sm-2 control-label">{{Wake event}}
+                            <sup><i class="fas fa-question-circle" title="{{Nécessaire avec l'option Variables rhasspyWakeWord / rhasspyWakeSiteId (Configuration).}}"></i></sup>
+                          </label>
+                          <div class="col-sm-2">
+                              <a id="bt_configureWakeEvent" class="btn btn-sm btn-warning" target="_blank" title="{{Configurer votre profil Rhasspy.}}"><i class="fas fa-users-cog"></i> {{Configurer}}</a>
+                          </div>
+                              
                         </div>
                       </form>
                     </div>

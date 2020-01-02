@@ -17,42 +17,60 @@
  */
 
 try {
-    require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
-    require_once dirname(__FILE__) . '/../class/rhasspy.utils.class.php';
+	require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
+	require_once dirname(__FILE__) . '/../class/rhasspy.utils.class.php';
 
-    include_file('core', 'authentification', 'php');
-    if (!isConnect('admin')) {
-        throw new Exception(__('401 - Accès non autorisé', __FILE__));
-    }
+	include_file('core', 'authentification', 'php');
+	if (!isConnect('admin')) {
+		throw new Exception(__('401 - Accès non autorisé', __FILE__));
+	}
 
-    if (init('action') == 'loadAssistant') {
-        $_cleanIntents = init('mode', "0");
-        $result = RhasspyUtils::loadAssistant($_cleanIntents);
-        if ( isset($result['error']) ) {
-            ajax::error($result['error']);
-        }
-        ajax::success($result);
-    }
+	if (init('action') == 'loadAssistant') {
+		$_cleanIntents = init('mode', null);
+		$result = RhasspyUtils::loadAssistant($_cleanIntents);
+		if ( isset($result['error']) ) {
+			ajax::error($result['error']);
+		}
+		ajax::success($result);
+	}
 
-    if (init('action') == 'deleteIntents') {
-        $result = RhasspyUtils::deleteIntents();
-        if ( isset($result['error']) ) {
-            ajax::error($result['error']);
-        }
-        ajax::success();
-    }
+	if (init('action') == 'deleteIntents') {
+		$result = RhasspyUtils::deleteIntents();
+		if ( isset($result['error']) ) {
+			ajax::error($result['error']);
+		}
+		ajax::success();
+	}
 
-    if (init('action') == 'test') {
-        $siteId = init('siteId', null);
-        $result = RhasspyUtils::test($siteId);
-        if ( isset($result['error']) ) {
-            ajax::error($result['error']);
-        }
-        ajax::success();
-    }
+	if (init('action') == 'test') {
+		$siteId = init('siteId', null);
+		$result = RhasspyUtils::test($siteId);
+		if ( isset($result['error']) ) {
+			ajax::error($result['error']);
+		}
+		ajax::success();
+	}
 
-    throw new Exception(__('Aucune méthode correspondante à : ', __FILE__) . init('action'));
-    /*     * *********Catch exeption*************** */
+	if (init('action') == 'configureWakeEvent') {
+		$_url = init('url', null);
+		$result = RhasspyUtils::configureWakeEvent($_url);
+		if ( isset($result['error']) ) {
+			ajax::error($result['error']);
+		}
+		ajax::success($result);
+	}
+
+	if (init('action') == 'configureRemoteHandle') {
+		$_url = init('url', null);
+		$result = RhasspyUtils::configureRemoteHandle($_url);
+		if ( isset($result['error']) ) {
+			ajax::error($result['error']);
+		}
+		ajax::success($result);
+	}
+
+	throw new Exception(__('Aucune méthode correspondante à : ', __FILE__) . init('action'));
+	/*     * *********Catch exeption*************** */
 } catch (Exception $e) {
-    ajax::error(displayExeption($e), $e->getCode());
+	ajax::error(displayExeption($e), $e->getCode());
 }
