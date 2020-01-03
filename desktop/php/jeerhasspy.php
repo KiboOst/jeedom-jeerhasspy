@@ -7,6 +7,7 @@
   $plugin = plugin::byId('jeerhasspy');
   sendVarToJS('eqType', $plugin->getId());
   $eqLogics = eqLogic::byType($plugin->getId());
+  sendVarToJS('Core_noEqContextMenu', 1);
 
   //get intents groups for panels and autocomplete:
   $intentGroups = array();
@@ -163,7 +164,7 @@
                               <a id="bt_configureIntRemote" class="btn btn-sm btn-warning" target="_blank" title="{{Configurer votre profil Rhasspy.}}"><i class="fas fa-users-cog"></i> {{Configurer}}</a>
                           </div>
                         </div>
-                              
+
                         <div class="form-group">
                           <label class="col-sm-2 control-label">{{URL externe}}
                             <sup><i class="fas fa-question-circle" title="{{URL externe (Jeedom et Rhasspy sur deux réseaux différents) à copier dans Rhasspy, onglet Settings.}}"></i></sup>
@@ -175,7 +176,7 @@
                               <a id="bt_configureExtRemote" class="btn btn-sm btn-warning" target="_blank" title="{{Configurer votre profil Rhasspy.}}"><i class="fas fa-users-cog"></i> {{Configurer}}</a>
                           </div>
                         </div>
-                              
+
                         <div class="form-group">
                           <label class="col-sm-2 control-label">{{Wake event}}
                             <sup><i class="fas fa-question-circle" title="{{Nécessaire avec l'option Variables rhasspyWakeWord / rhasspyWakeSiteId (Configuration).}}"></i></sup>
@@ -183,7 +184,7 @@
                           <div class="col-sm-2">
                               <a id="bt_configureWakeEvent" class="btn btn-sm btn-warning" target="_blank" title="{{Configurer votre profil Rhasspy.}}"><i class="fas fa-users-cog"></i> {{Configurer}}</a>
                           </div>
-                              
+
                         </div>
                       </form>
                     </div>

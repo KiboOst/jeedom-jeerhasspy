@@ -67,6 +67,96 @@ $('#bt_resetSearch').off('click').on('click', function () {
   $('#input_searchEqlogic').keyup()
 })
 
+//contextMenu
+$(function(){
+  try{
+    $.contextMenu('destroy', $('.nav.nav-tabs'))
+    pluginId =  $('body').attr('data-page')
+    jeedom.eqLogic.byType({
+      type: pluginId,
+      error: function (error) {
+        $('#div_alert').showAlert({message: error.message, level: 'danger'});
+      },
+      success: function (_eqs) {
+        if(_eqs.length == 0){
+          return;
+        }
+        var eqsGroups = []
+        for(i=0; i<_eqs.length; i++){
+          group = _eqs[i].configuration.group
+          if (group == null) continue
+          if (group == "") group = 'Aucun'
+          group = group[0].toUpperCase() + group.slice(1)
+          eqsGroups.push(group)
+        }
+        eqsGroups = Array.from(new Set(eqsGroups))
+        eqsGroups.sort()
+        var eqsList = []
+        for(i=0; i<eqsGroups.length; i++){
+          group = eqsGroups[i]
+          eqsList[group] = []
+          for(j=0; j<_eqs.length; j++)
+          {
+            eq = _eqs[j]
+            eqGroup = eq.configuration.group
+            if (eqGroup == null) continue
+            if (eqGroup == "") eqGroup = 'Aucun'
+            if (eqGroup.toLowerCase() != group.toLowerCase()) continue
+            eqsList[group].push([eq.name, eq.id])
+          }
+        }
+
+        //set context menu!
+        var contextmenuitems = {}
+        var uniqId = 0
+        for (var group in eqsList) {
+          groupEq = eqsList[group]
+          items = {}
+          for (var index in groupEq) {
+            eq = groupEq[index]
+            eqName = eq[0]
+            eqId = eq[1]
+            items[uniqId] = {'name': eqName, 'id' : eqId}
+            uniqId ++
+          }
+          contextmenuitems[group] = {'name':group, 'items':items}
+        }
+        if (Object.entries(contextmenuitems).length > 0 && contextmenuitems.constructor === Object){
+          $('.nav.nav-tabs').contextMenu({
+            selector: 'li',
+            autoHide: true,
+            zIndex: 9999,
+            className: 'eq-context-menu',
+            callback: function(key, options, event) {
+              tab = null
+              tabObj = null
+              if (document.location.toString().match('#')) {
+                tab = '#' + document.location.toString().split('#')[1]
+                if (tab != '#') {
+                  tabObj = $('a[href="' + tab + '"]')
+                }
+              }
+              $.hideAlert()
+              if (event.ctrlKey || event.originalEvent.which == 2) {
+                var type = $('body').attr('data-page')
+                var url = 'index.php?v=d&m='+type+'&p='+type+'&id='+options.commands[key].id
+                if (tabObj) url += tab
+                window.open(url).focus()
+              } else {
+                $('.eqLogicDisplayCard[data-eqLogic_id="' + options.commands[key].id + '"]').click()
+                if (tabObj) tabObj.click()
+              }
+            },
+            items: contextmenuitems
+          })
+        }
+      }
+    })
+  }catch(err) {
+    console.log(err)
+  }
+})
+
 //configure:
 $('#bt_configureIntRemote').off('click').on('click', function () {
   	$.hideAlert()
