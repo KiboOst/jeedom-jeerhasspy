@@ -169,29 +169,11 @@ class RhasspyUtils
 		self::logger('_text: '.$_text.' | _siteId: '.$_siteId.' | lang: '.$_lang);
 
 		$uri = self::$_uri;
-
-		/* rhasspy should support sending tts on satellites:
-		if (isset($_siteId)) {
-			$eqLogics = eqLogic::byType('jeerhasspy');
-			$TTSeq = null;
-			foreach ($eqLogics as $eqLogic) {
-				if ($eqLogic->getConfiguration('type') == 'intent') continue;
-				if ($eqLogic->getName() == $_siteId) {
-					if ($eqLogic->getConfiguration('type') == 'satDevice') {
-						$uri = null;
-					}
-					//get url from device eqlogic!
-					break;
-				}
-			}
-		}
-		*/
-
+		$url = $uri.'/api/text-to-speech?siteId='.$_siteId;
 		if ($_lang) {
-			$url = $uri.'/api/text-to-speech?language='.$_lang;
-		} else {
-			$url = $uri.'/api/text-to-speech';
+			$url .= '&language='.$_lang;
 		}
+
 		$answer = self::_request('POST', $url, $_text);
 		if ( isset($answer['error']) ) {
 			message::add('error', 'jeeRhasspy:textToSpeech error, Could not connect to Rhasspy!');
@@ -257,11 +239,6 @@ class RhasspyUtils
 			}
 		}
 		else return $_string;
-	}
-
-	public function sanitize_text($_text=null) //unused yet
-	{
-		if (!isset($_text)) return $_text;
 	}
 
 	/* * ***************************Create Jeedom object, eqlogics, commands********************************* */

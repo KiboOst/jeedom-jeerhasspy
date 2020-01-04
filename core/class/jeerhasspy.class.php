@@ -66,7 +66,7 @@ class jeerhasspy extends eqLogic {
                         $eqLogic = eqLogic::byLogicalId($intentName, 'jeerhasspy');
                         if (is_object($eqLogic) && $eqLogic->getIsEnable() == 1)
                         {
-                            $eqLogic->get_callback_scenario(null,null,null,$payload);
+                            $eqLogic->exec_callback_scenario($payload);
                         } else {
                             $_answerToRhasspy['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
                         }
@@ -90,7 +90,7 @@ class jeerhasspy extends eqLogic {
     }
 
     //Get intent eq scenario:
-    public function get_callback_scenario($scenario_id=null, $scenario_action=null, $scenario_tags=null, $payload=null)
+    public function exec_callback_scenario($payload=null)
     {
         $callback_settings = $this->getConfiguration('callbackScenario');
         RhasspyUtils::logger('callback_settings: '.json_encode($callback_settings));
@@ -116,7 +116,7 @@ class jeerhasspy extends eqLogic {
     //Set scenario tags for scenario exec:
     public function get_all_scenario_tags($_options, $_payload)
     {
-        RhasspyUtils::logger('_options: '.json_encode($_payload));
+        RhasspyUtils::logger('__options: '.json_encode($_payload));
         $tags = array();
         $userTags = $_options['user_tags'];
 
@@ -137,11 +137,12 @@ class jeerhasspy extends eqLogic {
             }
         }
         if ($_options['isTagSlots'] == '1') {
-            foreach ($_payload['slots'] as $slot) {
-                $tags['#'.$slot['slot'].'#'] = $slot['value'];
+            foreach ($_payload['slots'] as $slot => $value) {
+                $tags['#'.$slot.'#'] = $value;
             }
         }
 
+        RhasspyUtils::logger('__return tags: '.json_encode($tags));
         return $tags;
     }
 
