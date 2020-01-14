@@ -63,13 +63,22 @@ class jeerhasspy extends eqLogic {
                     }
 
                     if (!$isAskAnswer) {
+                      	$speakDefault = false;
                         $eqLogic = eqLogic::byLogicalId($intentName, 'jeerhasspy');
                         if (is_object($eqLogic) && $eqLogic->getIsEnable() == 1)
                         {
-                            $eqLogic->exec_callback_scenario($payload);
+                          	$callbackScenario = $eqLogic->getConfiguration('callbackScenario');
+                          	$minConfidence = 0;
+                          	if (isset($callbackScenario['minConfidence'])) $minConfidence = floatval($callbackScenario['minConfidence']);
+                            if ($minConfidence <= floatval($payload['intent']['confidence'])) {
+                              $eqLogic->exec_callback_scenario($payload);
+                            } else {
+                              $speakDefault = true;
+                            }
                         } else {
-                            $_answerToRhasspy['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
+                            $speakDefault = true;
                         }
+                      	if ($speakDefault) $_answerToRhasspy['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
                     }
                 }
                 //always answer to rhasspy:

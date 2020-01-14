@@ -388,6 +388,13 @@
                   </div>
                 </div>
               </div>
+              
+              <label class="col-sm-1 control-label">{{Confidence}}
+                <sup><i class="fas fa-question-circle" title="{{Confidence minimale pour éxécuter le scénario.}}"></i></sup>
+              </label>
+              <div class="col-sm-5" style="margin-bottom: 4px;">
+                  <input type="number" value="0" min="0" max="1" step="0.1" class="eqLogicAttr input-sm" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="minConfidence" />
+              </div>
 
               <label class="col-sm-1 control-label">{{Tags}}
                 <sup><i class="fas fa-question-circle" title="{{Ajoutez ici des tags utilisateur lors de l'éxécution du scénario (#tagName#=tagValue).}}"></i></sup>
@@ -395,6 +402,7 @@
               <div class="col-sm-5">
                   <textarea class="eqLogicAttr" style="height: 30px;width: 95%;" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="user_tags" placeholder="#tagName#=tagValue"></textarea>
               </div>
+                  
           </div>
 
       </fieldset>

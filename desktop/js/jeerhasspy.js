@@ -146,6 +146,7 @@ $(function(){
                 $('.eqLogicDisplayCard[data-eqLogic_id="' + options.commands[key].id + '"]').click()
                 if (tabObj) tabObj.click()
               }
+              initPickers()
             },
             items: contextmenuitems
           })
@@ -155,6 +156,22 @@ $(function(){
   }catch(err) {
     console.log(err)
   }
+})
+
+
+//Spinners
+function initPickers() {
+  $('input[type="number"]').spinner({
+    icons: { down: "ui-icon-triangle-1-s", up: "ui-icon-triangle-1-n" }
+  })
+  setTimeout(function(){
+    $('input[type="number"][data-l3key="minConfidence"]').each(function() {
+      if ($(this).val() == '') $(this).val(0)
+    })
+  }, 250)
+}
+$('#intentsContainer .eqLogicDisplayCard').off('click').on('click', function () {
+  	initPickers()
 })
 
 //configure:
