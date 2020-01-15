@@ -101,6 +101,10 @@
         <br>
         <span>{{Supprimer les intentions}}</span>
       </div>
+      <div id="bt_showIntentsSummary" class="cursor eqLogicAction logoSecondary">
+        <i class="fas fa-list"></i>
+        <span class="txtColor"><center>{{Vue d'ensemble}}</center></span>
+      </div>
     </div>
     <br>
     <div>

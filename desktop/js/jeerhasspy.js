@@ -284,6 +284,12 @@ $('#bt_deleteIntents').off('click').on('click', function () {
     })
 })
 
+
+$('#bt_showIntentsSummary').off('click').on('click', function () {
+	$('#md_modal').dialog({title: "{{Résumé des intentions}}"})
+      .load('index.php?v=d&plugin=jeerhasspy&modal=intents.summary').dialog('open');
+})
+
 $('.jeeRhasspyDeviceCard').off('click').on('click', function () {
     $.hideAlert()
     var site_id = $(this).data('site_id')

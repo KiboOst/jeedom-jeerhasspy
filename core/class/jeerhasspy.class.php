@@ -71,7 +71,8 @@ class jeerhasspy extends eqLogic {
                           	$minConfidence = 0;
                           	if (isset($callbackScenario['minConfidence'])) $minConfidence = floatval($callbackScenario['minConfidence']);
                             if ($minConfidence <= floatval($payload['intent']['confidence'])) {
-                              $eqLogic->exec_callback_scenario($payload);
+                              $_exec = $eqLogic->exec_callback_scenario($payload);
+                              if (!$_exec) $speakDefault = true;
                             } else {
                               $speakDefault = true;
                             }
