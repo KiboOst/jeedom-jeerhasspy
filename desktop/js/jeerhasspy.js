@@ -171,19 +171,19 @@ function initPickers() {
   }, 250)
 }
 $('#intentsContainer .eqLogicDisplayCard').off('click').on('click', function () {
-  	initPickers()
+    initPickers()
 })
 
 //configure:
 $('#bt_configureIntRemote').off('click').on('click', function () {
-  	$.hideAlert()
+    $.hideAlert()
       bootbox.confirm({
         title: '<i class="fa fa-exclamation-triangle warning"></i> {{Configuration de l\'event <i>Intent Recognized</i>}}',
         message: '<p>{{Cette action va modifier votre profil sur Rhasspy et redémarrer le service.}}</p>',
         callback: function (result) {
           if (result) {
-            	_url = $('input[data-urlType="url_int"]').val()
-            	configureRemoteHandle(_url)
+              _url = $('input[data-urlType="url_int"]').val()
+              configureRemoteHandle(_url)
           }
         }
       })
@@ -202,8 +202,8 @@ $('#bt_configureExtRemote').off('click').on('click', function () {
       })
 })
 $('#bt_configureWakeEvent').off('click').on('click', function () {
-  	$.hideAlert()
-  	bootbox.prompt({
+    $.hideAlert()
+    bootbox.prompt({
         title: '<i class="fa fa-exclamation-triangle warning"></i> {{Configuration de l\'event <i>Wakeword Detected</i>}}',
         message: '<p>{{Cette action va modifier votre profil sur Rhasspy et redémarrer le service.}}</p>',
         inputType: 'select',
@@ -284,11 +284,16 @@ $('#bt_deleteIntents').off('click').on('click', function () {
     })
 })
 
-
 $('#bt_showIntentsSummary').off('click').on('click', function () {
-	$('#md_modal').dialog({title: "{{Résumé des intentions}}"})
-      .load('index.php?v=d&plugin=jeerhasspy&modal=intents.summary').dialog('open');
+  $('#md_modal').dialog({title: "{{Résumé des intentions}}"})
+      .load('index.php?v=d&plugin=jeerhasspy&modal=intents.summary').dialog('open')
 })
+
+$('#bt_gotoRhasspy').off('click').on('click', function () {
+  window.open($(this).data('url')).focus()
+})
+
+
 
 $('.jeeRhasspyDeviceCard').off('click').on('click', function () {
     $.hideAlert()
@@ -393,8 +398,8 @@ function deleteIntents() {
 }
 
 function configureWakeEvent(_url) {
-  	if (!isset(_url)) _url = 'url_int'
-  	_url = $('input[data-urlType="'+_url+'"]').val()
+    if (!isset(_url)) _url = 'url_int'
+    _url = $('input[data-urlType="'+_url+'"]').val()
     $.ajax({
         url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
         data: {
@@ -416,7 +421,7 @@ function configureWakeEvent(_url) {
 }
 
 function configureRemoteHandle(_url) {
-  	if (!isset(_url)) _url = 'url_int'
+    if (!isset(_url)) _url = 'url_int'
     $.ajax({
         url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
         data: {

@@ -64,6 +64,7 @@ function refreshIntentsSummary() {
 			$('#table_intentsSummary tbody').empty()
 			var table = []
 			for(var i in data){
+
 				var intent = data[i]
 				if (intent.configuration.type != 'intent') continue
 				var tr = '<tr class="intent" data-id="' + intent.id + '">'
@@ -151,6 +152,22 @@ function refreshIntentsSummary() {
 
 function saveIntentsSummary() {
 	var intents = $('#table_intentsSummary tbody .intent').getValues('.eqLogicAttr')
+	intents.forEach(function (intent) {
+		jeedom.eqLogic.save({
+			eqLogics : [intent],
+			type: 'jeerhasspy',
+			error: function (error) {
+				$('#div_alertIntentsSummary').showAlert({message: error.message, level: 'danger'})
+			},
+			success : function(data){
+				$('#div_alertIntentsSummary').showAlert({message: '{{Sauvegarde effectuée}}', level: 'success'});
+			}
+		})
+	})
+	refreshIntentsSummary()
+
+	/*
+	var intents = $('#table_intentsSummary tbody .intent').getValues('.eqLogicAttr')
 	jeedom.eqLogic.save({
 		eqLogics : intents,
 		type: 'jeerhasspy',
@@ -162,7 +179,6 @@ function saveIntentsSummary() {
 			refreshIntentsSummary()
 		}
 	})
-
+	*/
 }
-
 </script>

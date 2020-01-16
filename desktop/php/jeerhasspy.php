@@ -105,6 +105,10 @@
         <i class="fas fa-list"></i>
         <span class="txtColor"><center>{{Vue d'ensemble}}</center></span>
       </div>
+      <div id="bt_gotoRhasspy" class="cursor eqLogicAction logoSecondary" data-url="<?php echo $_rhasspyUrl; ?>">
+        <i class="fas fa-server"></i>
+        <span class="txtColor"><center>{{Rhasspy}}</center></span>
+      </div>
     </div>
     <br>
     <div>
@@ -133,10 +137,7 @@
                               <input type="text" class="form-control" readonly value="<?php echo config::byKey('assistantDate', 'jeerhasspy'); ?>"/>
                           </div>
                           <div class="col-sm-6">
-                        	<span></span>
-                          </div>
-                          <div class="col-sm-2">
-                              <a href="<?php echo $_rhasspyUrl; ?>" class="btn btn-sm btn-success" target="_blank" title="{{Ouvrir l'interface de Rhasspy.}}"><i class="fa fa-arrow-circle-right"></i> {{Rhasspy}}</a>
+                          <span></span>
                           </div>
                         </div>
 
@@ -392,7 +393,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <label class="col-sm-1 control-label">{{Confidence}}
                 <sup><i class="fas fa-question-circle" title="{{Confidence minimale pour éxécuter le scénario.}}"></i></sup>
               </label>
@@ -406,7 +407,7 @@
               <div class="col-sm-5">
                   <textarea class="eqLogicAttr" style="height: 30px;width: 95%;" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="user_tags" placeholder="#tagName#=tagValue"></textarea>
               </div>
-                  
+
           </div>
 
       </fieldset>
