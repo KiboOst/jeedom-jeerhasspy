@@ -26,9 +26,16 @@ class jeerhasspy extends eqLogic {
     //rhasspy called endpoint forwarded by jeeAPI:
     public static function event() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $input = file_get_contents('php://input');
-            RhasspyUtils::logger('POST: '.$input);
-            $payload = json_decode($input, true);
+            $payload = json_decode(file_get_contents('php://input'), true);
+            //wakeword received:
+            if (isset($payload['wakewordId'])) {
+                if (config::byKey('setWakeVariables', 'jeerhasspy') == '1') {
+                    scenario::setData('rhasspyWakeWord', $payload['wakewordId']);
+                    scenario::setData('rhasspyWakeSiteId', $payload['siteId']);
+                    RhasspyUtils::logger('Set variables: rhasspyWakeWord | rhasspyWakeSiteId: '.$payload['wakewordId'].' | '.$payload['siteId']);
+                }
+                return;
+            }
             $_answerToRhasspy = array('speech' => array('text' => ''));
             //intent received:
             if (isset($payload['intent']) && isset($payload['intent']['name'])) {
@@ -57,12 +64,14 @@ class jeerhasspy extends eqLogic {
                                 }
                             }
                             if ($answer) {
+                                RhasspyUtils::logger('Ask answer received, set answer variable: '.$answer);
                                 scenario::setData($answerVariable, $answer);
                             }
                         }
                     }
 
                     if (!$isAskAnswer) {
+                        RhasspyUtils::logger('Event received: '.json_encode($payload));
                       	$speakDefault = false;
                         $eqLogic = eqLogic::byLogicalId($intentName, 'jeerhasspy');
                         if (is_object($eqLogic) && $eqLogic->getIsEnable() == 1)
@@ -85,15 +94,6 @@ class jeerhasspy extends eqLogic {
                 //always answer to rhasspy:
                 header('Content-Type: application/json');
                 echo json_encode($_answerToRhasspy);
-                return;
-            }
-            //wakeword received:
-            if (isset($payload['wakewordId'])) {
-                if (config::byKey('setWakeVariables', 'jeerhasspy') == '1') {
-                    RhasspyUtils::logger('Set variables: rhasspyWakeWord | rhasspyWakeSiteId: '.$payload['wakewordId'].' | '.$payload['siteId']);
-                    scenario::setData('rhasspyWakeWord', $payload['wakewordId']);
-                    scenario::setData('rhasspyWakeSiteId', $payload['siteId']);
-                }
                 return;
             }
         }
@@ -207,9 +207,10 @@ class jeerhasspyCmd extends cmd {
 
         $answer_entity = $options['answer'][0];
         $answer_variable = $options['variable'];
-        $options['askData'] = $answer_entity.'::'.$answer_variable;
-
+        $options['title'] = '';
         RhasspyUtils::textToSpeech($options);
+
+        $options['askData'] = $answer_entity.'::'.$answer_variable;
         RhasspyUtils::speakToAsk($options);
     }
 }

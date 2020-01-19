@@ -192,7 +192,7 @@ class RhasspyUtils
 
 		$uri = self::$_uri;
 		$url = $uri.'/api/listen-for-command?entity=askData&value='.$_options['askData'];
-		$answer = self::_request('POST', $url, $_text);
+		$answer = self::_request('POST', $url);
 		if ( isset($answer['error']) ) {
 			message::add('error', 'jeeRhasspy:speakToAsk error, Could not connect to Rhasspy!');
 			$answer['error'] = 'speakToAsk error, Could not connect to Rhasspy!';
