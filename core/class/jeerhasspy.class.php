@@ -30,16 +30,20 @@ class jeerhasspy extends eqLogic {
             //wakeword received:
             if (isset($payload['wakewordId'])) {
                 if (config::byKey('setWakeVariables', 'jeerhasspy') == '1') {
+                    $payload['siteId'] = explode(',', $payload['siteId'])[0];
                     scenario::setData('rhasspyWakeWord', $payload['wakewordId']);
                     scenario::setData('rhasspyWakeSiteId', $payload['siteId']);
+                    //RhasspyUtils::setSiteIdDevice($payload['siteId'], $_SERVER['REMOTE_ADDR'], $_SERVER['REMOTE_PORT'], $_SERVER['HTTPS']);
                     RhasspyUtils::logger('Set variables: rhasspyWakeWord | rhasspyWakeSiteId: '.$payload['wakewordId'].' | '.$payload['siteId']);
                 }
                 return;
             }
+
             $_answerToRhasspy = array('speech' => array('text' => ''));
             //intent received:
             if (isset($payload['intent']) && isset($payload['intent']['name'])) {
                 $intentName = $payload['intent']['name'];
+                $payload['siteId'] = explode(',', $payload['siteId'])[0];
                 if ($intentName != '') {
                     //check if Ask answer:
                     $isAskAnswer = false;
@@ -91,6 +95,7 @@ class jeerhasspy extends eqLogic {
                       	if ($speakDefault) $_answerToRhasspy['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
                     }
                 }
+                RhasspyUtils::setSiteIdDevice($payload['siteId'], $_SERVER['REMOTE_ADDR'], $_SERVER['REMOTE_PORT'], $_SERVER['HTTPS']);
                 //always answer to rhasspy:
                 header('Content-Type: application/json');
                 echo json_encode($_answerToRhasspy);

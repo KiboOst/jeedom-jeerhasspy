@@ -6,13 +6,23 @@ class RhasspyUtils
 	protected static $_curlHdl = null;
 	protected static $_uri = false;
 
-	public function init()
+	public function init($_siteId=null)
 	{
-		$Addr = config::byKey('rhasspyAddr', 'jeerhasspy');
-		if (substr($Addr, 0, 4) != 'http') $Addr = 'http://'.$Addr;
-		$port = config::byKey('rhasspyPort', 'jeerhasspy');
-		if ($port == '') $port = '12101';
-		self::$_uri = $Addr.':'.$port;
+		self::$_uri = None;
+		if (is_null($_siteId) || $_siteId == config::byKey('masterSiteId', 'jeerhasspy')) {
+			$Addr = config::byKey('rhasspyAddr', 'jeerhasspy');
+			if (substr($Addr, 0, 4) != 'http') $Addr = 'http://'.$Addr;
+			$port = config::byKey('rhasspyPort', 'jeerhasspy');
+			if ($port == '') $port = '12101';
+			self::$_uri = $Addr.':'.$port;
+		} else {
+			$eqLogics = eqLogic::byType('jeerhasspy');
+			foreach ($eqLogics as $eqLogic) {
+				if ($eqLogic->getConfiguration('type') != 'satDevice') continue;
+				if ($eqLogic->getName() == 'TTS-'.$_siteId) self::$_uri = $eqLogic->getConfiguration('addr');
+			}
+		}
+		if ((self::$_uri==None) && ($_siteId != config::byKey('masterSiteId', 'jeerhasspy'))) self::init(config::byKey('masterSiteId', 'jeerhasspy'));
 	}
 
 	public function logger($str = '', $level = 'debug')
@@ -50,13 +60,11 @@ class RhasspyUtils
 		$profile = self::_request('GET', $url);
 		$profile = json_decode($profile['result'], true);
 		if (isset($profile['mqtt']['site_id'])) {
-			$masterName = $profile['mqtt']['site_id'];
+			$masterName = explode(',', $profile['mqtt']['site_id'])[0];
 		} else {
 			$masterName = 'Rhasspy';
 		}
 		self::create_rhasspy_deviceEqlogic($masterName, 'masterDevice');
-		//Should support future satellites:
-		//self::create_rhasspy_deviceEqlogic($satName, 'satDevice');
 
 		//load profiles, default language:
 		$url = self::$_uri.'/api/profiles';
@@ -69,7 +77,7 @@ class RhasspyUtils
 		//load intents:
 		$url = self::$_uri.'/api/intents';
 		$jsonIntents = self::_request('GET', $url);
-		self::logger('intents: '.$jsonIntents['result']);
+		//self::logger('intents: '.$jsonIntents['result']);
 		if ($jsonIntents['error'] == '500') {
 			//not /api/intents yet:
 			$url = self::$_uri.'/api/sentences';
@@ -94,6 +102,12 @@ class RhasspyUtils
 		}
 		//create intents eqlogics:
 		self::create_rhasspy_intentEqlogics($intents, $_cleanIntents);
+
+		//delete all satellites, will be recreated later on intent from them:
+		$eqLogics = eqLogic::byType('jeerhasspy');
+		foreach ($eqLogics as $eqLogic) {
+			if ($eqLogic->getConfiguration('type') == 'satDevice') $eqLogic->remove();
+		}
 	}
 
 	public function deleteIntents()
@@ -103,6 +117,29 @@ class RhasspyUtils
 			if ($eqLogic->getConfiguration('type') != 'intent') continue;
 			$eqLogic->remove();
 		}
+	}
+
+	//check siteId device existence or create it:
+	public function setSiteIdDevice($_siteId=null, $_addr=null, $_port=null, $_https=false) {
+		//self::logger('_siteId: '.$_siteId.' | _addr: '.$_addr.' | _port: '.$_port.' | _https: '.$_https);
+		if (is_null($_siteId) || is_null($_addr)) return False;
+		if (is_null($_port)) $_port = '12101';
+		$_port = '12101';
+
+		if (config::byKey('masterSiteId', 'jeerhasspy') == $_siteId) return False;
+
+		$eqLogics = eqLogic::byType('jeerhasspy');
+		foreach ($eqLogics as $eqLogic) {
+			if ($eqLogic->getConfiguration('type') != 'satDevice') continue;
+			$eqName = str_replace('TTS-', '', $eqLogic->getName());
+			if ($eqName == $_siteId) return False;
+		}
+
+		//does not exist, create it:
+		$fullUrl = ($_https ? 'https://' : 'http://');
+		$fullUrl .= $_addr;
+		$fullUrl .= ':'.$_port;
+		self::create_rhasspy_deviceEqlogic($_siteId, 'satDevice', $fullUrl);
 	}
 
 	public function test($_siteId=null)
@@ -122,8 +159,6 @@ class RhasspyUtils
 	public function textToSpeech($_options=null)
 	{
 		if (!is_array($_options)) return;
-		self::init();
-
 		//get either siteId/lang or get master one:
 		$_lang = null;
 		$_siteId = null;
@@ -139,6 +174,8 @@ class RhasspyUtils
 		if (is_null($_siteId) || $_siteId == '') {
 			$_siteId = config::byKey('masterSiteId', 'jeerhasspy');
 		}
+
+		self::init($_siteId);
 
 		//get either text or test:
 		$_text = $_options['message'];
@@ -185,7 +222,7 @@ class RhasspyUtils
 
 	public function speakToAsk($_options=null, $_siteId=null)
 	{
-		self::init();
+		self::init($_siteId);
 		if (!is_array($_options)) return;
 
 		self::logger('ask data: '.$_options['askData']);
@@ -308,9 +345,9 @@ class RhasspyUtils
 		}
 	}
 
-	public function create_rhasspy_deviceEqlogic($_deviceName='', $_type='masterDevice')
+	public function create_rhasspy_deviceEqlogic($_deviceName='', $_type='masterDevice',  $_fullUrl=null)
 	{
-		self::logger($_deviceName.' | '.$_type);
+		self::logger($_deviceName.' | '.$_type.' | '.$_fullUrl);
 		if ($_deviceName == '') return false;
 
 		$_parentObjectId = self::get_rhasspy_intentObject();
@@ -342,10 +379,16 @@ class RhasspyUtils
 		}
 
 		if ($_type == 'satDevice') {
-			$eqLogics = eqLogic::byType('jeerhasspy');
-			foreach ($eqLogics as $eqLogic) {
-				if ($eqLogic->getConfiguration('type') != 'satDevice') continue;
-			}
+			$eqLogic = new jeerhasspy();
+			$eqLogic->setEqType_name('jeerhasspy');
+			$eqLogic->setLogicalId('TTS-'.$_deviceName);
+			$eqLogic->setName('TTS-'.$_deviceName);
+			$eqLogic->setIsVisible(0);
+			$eqLogic->setIsEnable(1);
+			$eqLogic->setObject_id($_parentObjectId);
+			$eqLogic->setConfiguration('type', $_type);
+			$eqLogic->setConfiguration('addr', $_fullUrl);
+			$eqLogic->save();
 		}
 
 		$eqLogic = eqLogic::byLogicalId('TTS-'.$_deviceName, 'jeerhasspy');
@@ -405,7 +448,6 @@ class RhasspyUtils
 		$askCmd->setDisplay('message_placeholder', 'Question');
 		$speakCmd->setOrder(2);
 		$askCmd->save();
-
 	}
 
 	/* * **********************************Modify Rhasspy user profile**************************************** */

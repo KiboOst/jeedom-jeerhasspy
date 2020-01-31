@@ -219,9 +219,9 @@
                   $siteId = str_replace('TTS-', '', $eqLogic->getName());
                   echo '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '"style="min-height:123px;">';
                   if ($eqLogic->getConfiguration('type') == 'masterDevice') {
-                    echo '<i class="fas fa-microphone-alt"></i><br>Master<br>';
+                    echo '<i class="fas fa-microphone"></i><br>Master<br>';
                   } else {
-                    echo '<i class="fas fa-microphone"></i><br>Satellite<br>';
+                    echo '<i class="fas fa-microphone-alt"></i><br>Satellite<br>';
                   }
                   echo '<strong class="name">' . $eqLogic->getName() . '</strong>';
                   echo '</div>';
