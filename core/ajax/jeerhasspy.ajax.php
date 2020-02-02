@@ -42,6 +42,27 @@ try {
 		ajax::success();
 	}
 
+	if (init('action') == 'deleteSatellite') {
+		$_id = init('id', null);
+		$eqLogic = eqLogic::byId($_id);
+		$result = $eqLogic->remove();
+		if ( isset($result['error']) ) {
+			ajax::error($result['error']);
+		}
+		ajax::success();
+	}
+
+	if (init('action') == 'addSatellite') {
+		$_addr = init('addr', null);
+		$_siteId = init('siteId', null);
+		$result = RhasspyUtils::create_rhasspy_deviceEqlogic($_siteId, 'satDevice', $_addr);
+		if ( isset($result['error']) ) {
+			ajax::error($result['error']);
+		}
+		ajax::success();
+	}
+
+
 	if (init('action') == 'test') {
 		$siteId = init('siteId', null);
 		$result = RhasspyUtils::test($siteId);
@@ -51,18 +72,12 @@ try {
 		ajax::success();
 	}
 
-	if (init('action') == 'configureWakeEvent') {
+	if (init('action') == 'configureRhasspyProfile') {
+		$_siteId = init('siteId', null);
 		$_url = init('url', null);
-		$result = RhasspyUtils::configureWakeEvent($_url);
-		if ( isset($result['error']) ) {
-			ajax::error($result['error']);
-		}
-		ajax::success($result);
-	}
-
-	if (init('action') == 'configureRemoteHandle') {
-		$_url = init('url', null);
-		$result = RhasspyUtils::configureRemoteHandle($_url);
+		$_configRemote = init('configRemote', false);
+		$_configWake = init('configWake', false);
+		$result = RhasspyUtils::configureRhasspyProfile($_siteId, $_url, $_configRemote, $_configWake);
 		if ( isset($result['error']) ) {
 			ajax::error($result['error']);
 		}

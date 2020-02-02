@@ -86,28 +86,29 @@
   <div class="col-xs-12 eqLogicThumbnailDisplay">
     <legend><i class="fa fa-cog"></i> {{Gestion}}</legend>
     <div class="eqLogicThumbnailContainer">
-      <div class="cursor eqLogicAction" data-action="gotoPluginConf">
+      <div class="cursor eqLogicAction logoSecondary" data-action="gotoPluginConf">
         <i class="fas fa-wrench"></i>
         <br>
         <span>{{Configuration du plugin}}</span>
       </div>
-      <div id="bt_loadAssistant" class="cursor eqLogicAction">
+      <div id="bt_loadAssistant" class="cursor eqLogicAction logoSecondary">
         <i class="fab fa-cloudsmith"></i>
         <br>
         <span>{{Importer l'Assistant}}</span>
       </div>
-      <div id="bt_deleteIntents" class="cursor eqLogicAction warning">
-        <i class="far fa-trash-alt"></i></i>
+      <div id="bt_addsatellite" class="cursor eqLogicAction logoSecondary">
+        <i class="fas fa-microphone-alt"></i></i>
         <br>
-        <span>{{Supprimer les intentions}}</span>
+        <span>{{Ajouter un satellite}}</span>
       </div>
       <div id="bt_showIntentsSummary" class="cursor eqLogicAction logoSecondary">
         <i class="fas fa-list"></i>
         <span class="txtColor"><center>{{Vue d'ensemble}}</center></span>
       </div>
-      <div id="bt_gotoRhasspy" class="cursor eqLogicAction logoSecondary" data-url="<?php echo $_rhasspyUrl; ?>">
-        <i class="fas fa-server"></i>
-        <span class="txtColor"><center>{{Rhasspy}}</center></span>
+      <div id="bt_deleteIntents" class="cursor eqLogicAction warning">
+        <i class="far fa-trash-alt"></i></i>
+        <br>
+        <span>{{Supprimer les intentions}}</span>
       </div>
     </div>
     <br>
@@ -165,9 +166,6 @@
                           <div class="col-sm-8 callback">
                             <input type="text" class="form-control" data-urlType="url_int" readonly value="<?php echo $_internalURL; ?>"/>
                           </div>
-                          <div class="col-sm-2">
-                              <a id="bt_configureIntRemote" class="btn btn-sm btn-warning" target="_blank" title="{{Configurer votre profil Rhasspy.}}"><i class="fas fa-users-cog"></i> {{Configurer}}</a>
-                          </div>
                         </div>
 
                         <div class="form-group">
@@ -177,20 +175,8 @@
                           <div class="col-sm-8 callback">
                             <input type="text" class="form-control" data-urlType="url_ext" readonly value="<?php echo $_externalURL; ?>"/>
                           </div>
-                          <div class="col-sm-2">
-                              <a id="bt_configureExtRemote" class="btn btn-sm btn-warning" target="_blank" title="{{Configurer votre profil Rhasspy.}}"><i class="fas fa-users-cog"></i> {{Configurer}}</a>
-                          </div>
                         </div>
 
-                        <div class="form-group">
-                          <label class="col-sm-2 control-label">{{Wake event}}
-                            <sup><i class="fas fa-question-circle" title="{{Nécessaire avec l'option Variables rhasspyWakeWord / rhasspyWakeSiteId (Configuration).}}"></i></sup>
-                          </label>
-                          <div class="col-sm-2">
-                              <a id="bt_configureWakeEvent" class="btn btn-sm btn-warning" target="_blank" title="{{Configurer votre profil Rhasspy.}}"><i class="fas fa-users-cog"></i> {{Configurer}}</a>
-                          </div>
-
-                        </div>
                       </form>
                     </div>
                   </div>
@@ -215,16 +201,41 @@
             <div class="eqLogicThumbnailContainer">
               <?php
                 foreach ($eqLogics as $eqLogic) {
-                  if ($eqLogic->getConfiguration('type') == 'intent') continue;
+                  if ($eqLogic->getConfiguration('type') != 'masterDevice') continue;
                   $siteId = str_replace('TTS-', '', $eqLogic->getName());
-                  echo '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '"style="min-height:123px;">';
-                  if ($eqLogic->getConfiguration('type') == 'masterDevice') {
-                    echo '<i class="fas fa-microphone"></i><br>Master<br>';
-                  } else {
-                    echo '<i class="fas fa-microphone-alt"></i><br>Satellite<br>';
-                  }
+                  $icon = '<i class="fas fa-microphone"></i><br>Master<br>';
+                  $siteUrl = $_rhasspyUrl;
+
+                  echo '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px;">';
+                  echo $icon;
                   echo '<strong class="name">' . $eqLogic->getName() . '</strong>';
+
+                  echo '<br><center>';
+                  echo '<div class="input-group">';
+                    echo '<a class="bt_configure warning" style="padding: 0 6px;" title="{{Configurer le profile Rhasspy.}}"><i class="fas fa-users-cog"></i></a>';
+                    echo '<a class="bt_speakTest info" style="padding: 0 6px;" title="{{Test TTS sur ce device.}}"><i class="fas fa-headphones"></i></i></i></a>';
+                    echo '<a class="bt_goToDevice roundedRight success" style="padding: 0 6px;" title="{{Ouvrir l\'interface de ce device.}}"><i class="fas fa-server"></i></a>';
                   echo '</div>';
+                  echo '</center></div>';
+                }
+                foreach ($eqLogics as $eqLogic) {
+                  if ($eqLogic->getConfiguration('type') != 'satDevice') continue;
+                  $siteId = str_replace('TTS-', '', $eqLogic->getName());
+                  $icon = '<i class="fas fa-microphone-alt"></i><br>Satellite<br>';
+                  $siteUrl = $eqLogic->getConfiguration('addr');
+
+                  echo '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px;">';
+                  echo $icon;
+                  echo '<strong class="name">' . $eqLogic->getName() . '</strong>';
+
+                  echo '<br><center>';
+                  echo '<div class="input-group">';
+                    echo '<a class="bt_deleteSat roundedLeft danger" style="padding: 0 6px;" title="{{Supprimer le device Rhasspy.}}"><i class="fas fa-minus-circle"></i></a>';
+                    echo '<a class="bt_configure warning" style="padding: 0 6px;" title="{{Configurer le profile Rhasspy.}}"><i class="fas fa-users-cog"></i></a>';
+                    echo '<a class="bt_speakTest info" style="padding: 0 6px;" title="{{Test TTS sur ce device.}}"><i class="fas fa-headphones"></i></i></i></a>';
+                    echo '<a class="bt_goToDevice roundedRight success" style="padding: 0 6px;" title="{{Ouvrir l\'interface de ce device.}}"><i class="fas fa-server"></i></a>';
+                  echo '</div>';
+                  echo '</center></div>';
                 }
               ?>
             </div>
@@ -415,6 +426,47 @@
   </div>
 
   </div>
+</div>
+
+<div id="addSatelliteFormContainer" class="hidden">
+  <i class="fa fa-exclamation-triangle warning"></i> {{Ajout d'un satellite.}}
+  <br><br>
+  <form id="addSatelliteForm" class="form-horizontal">
+      <div class="form-group">
+          <label class="control-label col-sm-3">{{Adresse}}</label>
+          <div class="col-sm-8">
+              <input type="text" class="form-control" name="addr" placeholder="http://192.168.0.10:12101" />
+          </div>
+      </div>
+      <div class="form-group">
+          <label class="control-label col-sm-3">siteId</label>
+          <div class="col-sm-8">
+              <input type="text" class="form-control" name="siteId" />
+          </div>
+      </div>
+  </form>
+</div>
+
+<div id="configDeviceFormContainer" class="hidden">
+  <i class="fa fa-exclamation-triangle warning"></i> {{Configuration du profile Rhasspy.}}
+  <br><br>
+  <form id="configDeviceForm" class="form-horizontal">
+      <div class="form-group">
+          <label class="control-label col-sm-3">{{Adresse}}</label>
+          <div class="col-sm-8">
+              <select name="configUrl">
+                <option value="url_int">{{Utiliser l'url interne}}</option>
+                <option value="url_ext">{{Utiliser l'url externe}}</option>
+            </select>
+          </div>
+      </div>
+      <div class="form-group">
+          <label class="control-label col-sm-6">{{Configurer l'event Wakeword Detected}}</label>
+          <div class="col-sm-6">
+              <input type="checkbox" class="form-control" name="configWakeEvent" checked/>
+          </div>
+      </div>
+  </form>
 </div>
 
 <?php

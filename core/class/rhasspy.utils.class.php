@@ -102,12 +102,6 @@ class RhasspyUtils
 		}
 		//create intents eqlogics:
 		self::create_rhasspy_intentEqlogics($intents, $_cleanIntents);
-
-		//delete all satellites, will be recreated later on intent from them:
-		$eqLogics = eqLogic::byType('jeerhasspy');
-		foreach ($eqLogics as $eqLogic) {
-			if ($eqLogic->getConfiguration('type') == 'satDevice') $eqLogic->remove();
-		}
 	}
 
 	public function deleteIntents()
@@ -117,29 +111,6 @@ class RhasspyUtils
 			if ($eqLogic->getConfiguration('type') != 'intent') continue;
 			$eqLogic->remove();
 		}
-	}
-
-	//check siteId device existence or create it:
-	public function setSiteIdDevice($_siteId=null, $_addr=null, $_port=null, $_https=false) {
-		//self::logger('_siteId: '.$_siteId.' | _addr: '.$_addr.' | _port: '.$_port.' | _https: '.$_https);
-		if (is_null($_siteId) || is_null($_addr)) return False;
-		if (is_null($_port)) $_port = '12101';
-		$_port = '12101';
-
-		if (config::byKey('masterSiteId', 'jeerhasspy') == $_siteId) return False;
-
-		$eqLogics = eqLogic::byType('jeerhasspy');
-		foreach ($eqLogics as $eqLogic) {
-			if ($eqLogic->getConfiguration('type') != 'satDevice') continue;
-			$eqName = str_replace('TTS-', '', $eqLogic->getName());
-			if ($eqName == $_siteId) return False;
-		}
-
-		//does not exist, create it:
-		$fullUrl = ($_https ? 'https://' : 'http://');
-		$fullUrl .= $_addr;
-		$fullUrl .= ':'.$_port;
-		self::create_rhasspy_deviceEqlogic($_siteId, 'satDevice', $fullUrl);
 	}
 
 	public function test($_siteId=null)
@@ -451,10 +422,10 @@ class RhasspyUtils
 	}
 
 	/* * **********************************Modify Rhasspy user profile**************************************** */
-	public function configureRemoteHandle($_url)
+	public function configureRhasspyProfile($_siteId, $_url, $_configRemote=True, $_configWake=False)
 	{
 		self::logger($_url);
-		self::init();
+		self::init($_siteId);
 		$url = self::$_uri.'/api/profile?layers=profile';
 		$profile = self::_request('GET', $url);
 		if ( isset($answer['error']) ) {
@@ -466,53 +437,40 @@ class RhasspyUtils
 		//change settings:
 		$_newProfile = $profile;
 
-		$_newProfile['handle']['system'] = 'remote';
-		$_newProfile['handle']['remote']['url'] = $_url;
-		$url = self::$_uri.'/api/profile';
-		$result = self::_request('POST', $url, json_encode($_newProfile, JSON_UNESCAPED_SLASHES));
+		if ($_configRemote) {
+			$_newProfile['handle']['system'] = 'remote';
+			$_newProfile['handle']['remote']['url'] = $_url;
+			$url = self::$_uri.'/api/profile';
+			$result = self::_request('POST', $url, json_encode($_newProfile, JSON_UNESCAPED_SLASHES));
 
-		//check applied settings
-		$url = self::$_uri.'/api/profile?layers=profile';
-		$profile = self::_request('GET', $url);
-		$profile = json_decode($profile['result'], true);
-		if ($profile['handle']['remote']['url'] != $_url) {
-			$answer['error'] = 'Could not apply new settings!';
-			return $answer;
-		} else {
-			self::_request('POST', self::$_uri.'/api/restart', 'configureRemoteHandle');
+			//check applied settings
+			$url = self::$_uri.'/api/profile?layers=profile';
+			$profile = self::_request('GET', $url);
+			$profile = json_decode($profile['result'], true);
+			if ($profile['handle']['remote']['url'] != $_url) {
+				$answer['error'] = 'Could not apply new settings!';
+				return $answer;
+			}
 		}
+
+		if ($_configWake) {
+			$_newProfile = $profile;
+			$_newProfile['webhooks']['awake'][0] = $_url;
+			$url = self::$_uri.'/api/profile';
+			$result = self::_request('POST', $url, json_encode($_newProfile, JSON_UNESCAPED_SLASHES));
+
+			//check applied settings
+			$url = self::$_uri.'/api/profile?layers=profile';
+			$profile = self::_request('GET', $url);
+			$profile = json_decode($profile['result'], true);
+			if ($profile['webhooks']['awake'][0] != $_url) {
+				$answer['error'] = 'Could not apply new settings!';
+				return $answer;
+			}
+		}
+
+		self::_request('POST', self::$_uri.'/api/restart', 'configureRhasspyProfile');
 	}
-
-	public function configureWakeEvent($_url)
-	{
-		self::logger($_url);
-		self::init();
-		$url = self::$_uri.'/api/profile?layers=profile';
-		$profile = self::_request('GET', $url);
-		if ( isset($answer['error']) ) {
-			$answer['error'] = 'Could not connect to Rhasspy!';
-			return $answer;
-		}
-		$profile = json_decode($profile['result'], true);
-
-		//change settings:
-		$_newProfile = $profile;
-		$_newProfile['webhooks']['awake'][0] = $_url;
-		$url = self::$_uri.'/api/profile';
-		$result = self::_request('POST', $url, json_encode($_newProfile, JSON_UNESCAPED_SLASHES));
-
-		//check applied settings
-		$url = self::$_uri.'/api/profile?layers=profile';
-		$profile = self::_request('GET', $url);
-		$profile = json_decode($profile['result'], true);
-		if ($profile['webhooks']['awake'][0] != $_url) {
-			$answer['error'] = 'Could not apply new settings!';
-			return $answer;
-		} else {
-			self::_request('POST', self::$_uri.'/api/restart', 'configureWakeEvent');
-		}
-	}
-
 
 	//CALLING FUNCTIONS===================================================
 	protected function _request($method, $url, $post=null)

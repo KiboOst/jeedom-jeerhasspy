@@ -33,7 +33,6 @@ class jeerhasspy extends eqLogic {
                     $payload['siteId'] = explode(',', $payload['siteId'])[0];
                     scenario::setData('rhasspyWakeWord', $payload['wakewordId']);
                     scenario::setData('rhasspyWakeSiteId', $payload['siteId']);
-                    //RhasspyUtils::setSiteIdDevice($payload['siteId'], $_SERVER['REMOTE_ADDR'], $_SERVER['REMOTE_PORT'], $_SERVER['HTTPS']);
                     RhasspyUtils::logger('Set variables: rhasspyWakeWord | rhasspyWakeSiteId: '.$payload['wakewordId'].' | '.$payload['siteId']);
                 }
                 return;
@@ -95,7 +94,6 @@ class jeerhasspy extends eqLogic {
                       	if ($speakDefault) $_answerToRhasspy['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
                     }
                 }
-                RhasspyUtils::setSiteIdDevice($payload['siteId'], $_SERVER['REMOTE_ADDR'], $_SERVER['REMOTE_PORT'], $_SERVER['HTTPS']);
                 //always answer to rhasspy:
                 header('Content-Type: application/json');
                 echo json_encode($_answerToRhasspy);
