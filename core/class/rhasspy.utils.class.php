@@ -225,7 +225,7 @@ class RhasspyUtils
 		self::init($_siteId);
 		if (!is_array($_options)) return;
 
-		self::logger('ask data: '.$_options['askData']);
+		self::logger($_siteId.'-> ask data: '.$_options['askData']);
 
 		$uri = self::$_uri;
 		$url = $uri.'/api/listen-for-command?entity=askData&value='.$_options['askData'];

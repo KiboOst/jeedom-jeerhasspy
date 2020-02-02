@@ -179,7 +179,7 @@ class jeerhasspyCmd extends cmd {
     public function execute($options = array())
     {
         $eqlogic = $this->getEqLogic();
-        RhasspyUtils::logger();
+        RhasspyUtils::logger($eqlogic->getName());
         switch ($this->getLogicalId()) {
             case 'speak':
                 $this->rhasspy_speak($options);
@@ -208,14 +208,16 @@ class jeerhasspyCmd extends cmd {
 
     public function rhasspy_ask($options = array())
     {
-        RhasspyUtils::logger($options, 'info');
+        $eqName = $this->getEqLogic()->getName();
+        $siteId = str_replace('TTS-', '', $eqName);
+        RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
 
         $answer_entity = $options['answer'][0];
         $answer_variable = $options['variable'];
-        $options['title'] = '';
+        $options['title'] = $siteId;
         RhasspyUtils::textToSpeech($options);
 
         $options['askData'] = $answer_entity.'::'.$answer_variable;
-        RhasspyUtils::speakToAsk($options);
+        RhasspyUtils::speakToAsk($options, $siteId);
     }
 }
