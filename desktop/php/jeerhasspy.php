@@ -143,7 +143,7 @@
                         </div>
 
                         <div class="form-group">
-                          <label class="col-sm-2 control-label">{{Adresse}}</label>
+                          <label class="col-sm-2 control-label">{{Adresse (maître)}}</label>
                           <div class="col-sm-2">
                               <input type="text" class="form-control" readonly value="<?php echo $_rhasspyUrl; ?>"/>
                           </div>
@@ -205,37 +205,41 @@
                   $siteId = str_replace('TTS-', '', $eqLogic->getName());
                   $icon = '<i class="fas fa-microphone"></i><br>Master<br>';
                   $siteUrl = $_rhasspyUrl;
+                  
+                  $card = '';
+                  $card .= '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px;">';
+                  $card .= $icon;
+                  $card .= '<strong class="name">' . $eqLogic->getName() . '</strong>';
 
-                  echo '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px;">';
-                  echo $icon;
-                  echo '<strong class="name">' . $eqLogic->getName() . '</strong>';
-
-                  echo '<br><center>';
-                  echo '<div class="input-group">';
-                    echo '<a class="bt_configure warning" style="padding: 0 6px;" title="{{Configurer le profile Rhasspy.}}"><i class="fas fa-users-cog"></i></a>';
-                    echo '<a class="bt_speakTest info" style="padding: 0 6px;" title="{{Test TTS sur ce device.}}"><i class="fas fa-headphones"></i></i></i></a>';
-                    echo '<a class="bt_goToDevice roundedRight success" style="padding: 0 6px;" title="{{Ouvrir l\'interface de ce device.}}"><i class="fas fa-server"></i></a>';
-                  echo '</div>';
-                  echo '</center></div>';
+                  $card .= '<br><center>';
+                  $card .= '<div class="input-group">';
+                    $card .= '<a class="bt_configure warning" style="padding: 0 6px;" title="{{Configurer le profile Rhasspy.}}"><i class="fas fa-users-cog"></i></a>';
+                    $card .= '<a class="bt_speakTest info" style="padding: 0 6px;" title="{{Test TTS sur le Rhasspy maître.}}"><i class="fas fa-headphones"></i></i></i></a>';
+                    $card .= '<a class="bt_goToDevice roundedRight success" style="padding: 0 6px;" title="{{Ouvrir l\'interface du Rhasspy maître.}}"><i class="fas fa-server"></i></a>';
+                  $card .= '</div>';
+                  $card .= '</center></div>';
+                  echo $card;
                 }
                 foreach ($eqLogics as $eqLogic) {
                   if ($eqLogic->getConfiguration('type') != 'satDevice') continue;
                   $siteId = str_replace('TTS-', '', $eqLogic->getName());
                   $icon = '<i class="fas fa-microphone-alt"></i><br>Satellite<br>';
                   $siteUrl = $eqLogic->getConfiguration('addr');
+                  
+                  $card = '';
+                  $card .= '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px;">';
+                  $card .= $icon;
+                  $card .= '<strong class="name">' . $eqLogic->getName() . '</strong>';
 
-                  echo '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px;">';
-                  echo $icon;
-                  echo '<strong class="name">' . $eqLogic->getName() . '</strong>';
-
-                  echo '<br><center>';
-                  echo '<div class="input-group">';
-                    echo '<a class="bt_deleteSat roundedLeft danger" style="padding: 0 6px;" title="{{Supprimer le device Rhasspy.}}"><i class="fas fa-minus-circle"></i></a>';
-                    echo '<a class="bt_configure warning" style="padding: 0 6px;" title="{{Configurer le profile Rhasspy.}}"><i class="fas fa-users-cog"></i></a>';
-                    echo '<a class="bt_speakTest info" style="padding: 0 6px;" title="{{Test TTS sur ce device.}}"><i class="fas fa-headphones"></i></i></i></a>';
-                    echo '<a class="bt_goToDevice roundedRight success" style="padding: 0 6px;" title="{{Ouvrir l\'interface de ce device.}}"><i class="fas fa-server"></i></a>';
-                  echo '</div>';
-                  echo '</center></div>';
+                  $card .= '<br><center>';
+                  $card .= '<div class="input-group">';
+                    $card .= '<a class="bt_deleteSat roundedLeft danger" style="padding: 0 6px;" title="{{Supprimer ce satellite.}}"><i class="fas fa-minus-circle"></i></a>';
+                    $card .= '<a class="bt_configure warning" style="padding: 0 6px;" title="{{Configurer le profile Rhasspy de ce satellite.}}"><i class="fas fa-users-cog"></i></a>';
+                    $card .= '<a class="bt_speakTest info" style="padding: 0 6px;" title="{{Test TTS sur ce satellite.}}"><i class="fas fa-headphones"></i></i></i></a>';
+                    $card .= '<a class="bt_goToDevice roundedRight success" style="padding: 0 6px;" title="{{Ouvrir l\'interface de ce satellite.}}"><i class="fas fa-server"></i></a>';
+                  $card .= '</div>';
+                  $card .= '</center></div>';
+                  echo $card;
                 }
               ?>
             </div>

@@ -10,8 +10,8 @@ if (!isConnect()) {
 <form class="form-horizontal">
     <fieldset>
         <div class="form-group">
-            <label class="col-lg-4 control-label" >{{Adresse}}
-                <sup><i class="fas fa-question-circle" title="{{Adresse IP de votre Rhasspy.}}"></i></sup>
+            <label class="col-lg-4 control-label" >{{Adresse du Rhasspy maître}}
+                <sup><i class="fas fa-question-circle" title="{{Adresse IP de votre Rhasspy (maître).}}"></i></sup>
             </label>
             <div class="col-lg-4">
                 <input class="configKey form-control" data-l1key="rhasspyAddr" placeholder="http://127.0.0.1"/>
@@ -19,8 +19,8 @@ if (!isConnect()) {
         </div>
 
         <div class="form-group">
-            <label class="col-lg-4 control-label" >{{Port}}
-                <sup><i class="fas fa-question-circle" title="{{Port de votre Rhasspy. 12101 par defaut}}"></i></sup>
+            <label class="col-lg-4 control-label" >{{Port du Rhasspy maître}}
+                <sup><i class="fas fa-question-circle" title="{{Port de votre Rhasspy (maître). 12101 par defaut}}"></i></sup>
             </label>
             <div class="col-lg-4">
                 <input class="configKey form-control" data-l1key="rhasspyPort" placeholder="12101"/>

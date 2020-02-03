@@ -285,6 +285,23 @@ $('#bt_addsatellite').off('click').on('click', function () {
       if (result) {
         var addr = $('.bootbox-body #addSatelliteForm').find('input[name="addr"]').val()
         var siteId = $('.bootbox-body #addSatelliteForm').find('input[name="siteId"]').val()
+        if (!addr.startsWith("http")){
+            $('#div_alert').showAlert({
+                message: '{{Vous devez indiquer l\'url complète du satellite (http://... ou https://...).}}',
+                level: 'danger'
+            })
+          	bootbox.hideAll()
+          	return false
+      	}
+        var checkAdrss = addr.replace('://', '')
+        if (!checkAdrss.includes(":")){
+            $('#div_alert').showAlert({
+                message: '{{Vous devez indiquer l\'url complète du satellite (exemple: http://192.168.0.10:12101).}}',
+                level: 'danger'
+            })
+          	bootbox.hideAll()
+          	return false
+      	}
         addSatellite(siteId, addr)
       }
     }
@@ -512,4 +529,3 @@ function configureRhasspyProfile(_siteId, _url, _configRemote, _configWake) {
         }
     })
 }
-
