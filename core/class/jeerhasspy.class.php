@@ -193,13 +193,19 @@ class jeerhasspyCmd extends cmd {
 
     public function rhasspy_speak($options = array())
     {
-        RhasspyUtils::logger($options['message'], 'info');
+        $eqName = $this->getEqLogic()->getName();
+        $siteId = str_replace('TTS-', '', $eqName);
+        $options['title'] = $siteId;
+        RhasspyUtils::logger($options);
         RhasspyUtils::textToSpeech($options);
     }
 
     public function rhasspy_dynamicSpeak($options = array())
     {
-        RhasspyUtils::logger($options['message'], 'info');
+        $eqName = $this->getEqLogic()->getName();
+        $siteId = str_replace('TTS-', '', $eqName);
+        $options['title'] = $siteId;
+        RhasspyUtils::logger($options['message']);
         $options['message'] = RhasspyUtils::evalDynamicString($options['message']);
         RhasspyUtils::textToSpeech($options);
     }

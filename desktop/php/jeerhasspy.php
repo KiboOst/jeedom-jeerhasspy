@@ -203,11 +203,11 @@
                 foreach ($eqLogics as $eqLogic) {
                   if ($eqLogic->getConfiguration('type') != 'masterDevice') continue;
                   $siteId = str_replace('TTS-', '', $eqLogic->getName());
-                  $icon = '<i class="fas fa-microphone"></i><br>Master<br>';
+                  $icon = '<i class="fas fa-microphone" style="font-size: 36px;"></i><br>Master<br>';
                   $siteUrl = $_rhasspyUrl;
                   
                   $card = '';
-                  $card .= '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px;">';
+                  $card .= '<div class="jeeRhasspyDeviceCard" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px; min-width:140px;">';
                   $card .= $icon;
                   $card .= '<strong class="name">' . $eqLogic->getName() . '</strong>';
 
@@ -223,11 +223,11 @@
                 foreach ($eqLogics as $eqLogic) {
                   if ($eqLogic->getConfiguration('type') != 'satDevice') continue;
                   $siteId = str_replace('TTS-', '', $eqLogic->getName());
-                  $icon = '<i class="fas fa-microphone-alt"></i><br>Satellite<br>';
+                  $icon = '<i class="fas fa-microphone-alt" style="font-size: 36px;"></i><br>Satellite<br>';
                   $siteUrl = $eqLogic->getConfiguration('addr');
                   
                   $card = '';
-                  $card .= '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px;">';
+                  $card .= '<div class="jeeRhasspyDeviceCard" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px; min-width:140px;">';
                   $card .= $icon;
                   $card .= '<strong class="name">' . $eqLogic->getName() . '</strong>';
 
