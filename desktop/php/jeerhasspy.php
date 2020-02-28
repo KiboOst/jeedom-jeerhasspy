@@ -205,7 +205,7 @@
                   $siteId = str_replace('TTS-', '', $eqLogic->getName());
                   $icon = '<i class="fas fa-microphone" style="font-size: 36px;"></i><br>Master<br>';
                   $siteUrl = $_rhasspyUrl;
-                  
+
                   $card = '';
                   $card .= '<div class="jeeRhasspyDeviceCard" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px; min-width:140px;">';
                   $card .= $icon;
@@ -225,7 +225,7 @@
                   $siteId = str_replace('TTS-', '', $eqLogic->getName());
                   $icon = '<i class="fas fa-microphone-alt" style="font-size: 36px;"></i><br>Satellite<br>';
                   $siteUrl = $eqLogic->getConfiguration('addr');
-                  
+
                   $card = '';
                   $card .= '<div class="jeeRhasspyDeviceCard" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px; min-width:140px;">';
                   $card .= $icon;
@@ -315,6 +315,7 @@
     <br/>
     <form class="form-horizontal">
       <fieldset>
+        <div id="intentCommon">
           <legend><i class="fas fa-microphone"></i> {{Intention}}</legend>
           <div class="form-group">
               <label class="col-sm-2 control-label">{{Nom}}</label>
@@ -334,6 +335,17 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label class="col-sm-2 control-label" >{{Interaction}}
+              <sup><i class="fas fa-question-circle" title="{{Utilise le moteur d'interaction de Jeedom au lieu d'un scénario.}}"></i></sup>
+            </label>
+            <div class="col-sm-3">
+              <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="isInteract"/>
+            </div>
+          </div>
+        </div>
+
+        <div id="intentScenario">
           <legend><i class="fas fa-cogs"></i> {{Callback Scenario}}</legend>
           <div class="form-group">
               <label class="col-sm-2 control-label">{{Scenario}}</label>
@@ -422,8 +434,8 @@
               <div class="col-sm-5">
                   <textarea class="eqLogicAttr" style="height: 30px;width: 95%;" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="user_tags" placeholder="#tagName#=tagValue"></textarea>
               </div>
-
           </div>
+        </div>
 
       </fieldset>
     </form>

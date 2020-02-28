@@ -79,6 +79,18 @@ class jeerhasspy extends eqLogic {
                         $eqLogic = eqLogic::byLogicalId($intentName, 'jeerhasspy');
                         if (is_object($eqLogic) && $eqLogic->getIsEnable() == 1)
                         {
+                            if ($eqLogic->getConfiguration('isInteract')) {
+                                RhasspyUtils::logger('Send query to interact engine!');
+                                $reply = interactQuery::tryToReply($payload['text']);
+                                if (trim($reply['reply']) != '') {
+                                    $_options = array();
+                                    $_options['title'] = $payload['siteId'];
+                                    $_options['message'] = $reply['reply'];
+                                    RhasspyUtils::textToSpeech($_options);
+                                }
+                                return;
+                            }
+
                           	$callbackScenario = $eqLogic->getConfiguration('callbackScenario');
                           	$minConfidence = 0;
                           	if (isset($callbackScenario['minConfidence'])) $minConfidence = floatval($callbackScenario['minConfidence']);

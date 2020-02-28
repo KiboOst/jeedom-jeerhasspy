@@ -4,7 +4,7 @@
 	"description" : "Plugin pour le support de l'assistant vocal Rhasspy dans Jeedom.",
 	"licence" : "AGPL",
 	"author" : "KiboOst",
-	"require" : "4.0",
+	"require" : "3.3",
 	"category" : "communication",
 	"hasDependency" : false,
 	"hasOwnDeamon" : false,
