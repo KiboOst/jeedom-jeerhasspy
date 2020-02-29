@@ -390,18 +390,6 @@ $(function() {
             }
         }
     })
-
-    if ($('input[data-l2key="isInteract"]').prop('checked')) {
-      $('#intentScenario').hide()
-    }
-})
-
-$('input[data-l2key="isInteract"]').change(function() {
-  if ($(this).prop('checked')) {
-    $('#intentScenario').hide()
-  } else {
-    $('#intentScenario').show()
-  }
 })
 
 $('.bt_openScenario').off('click').on('click', function () {
