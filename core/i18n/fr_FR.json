@@ -122,7 +122,7 @@
         "Réponse si aucune correspondance n'est trouvée.": "Réponse si aucune correspondance n'est trouvée.",
         "Désolé mais je ne vois pas quoi faire.": "Désolé mais je ne vois pas quoi faire.",
         "Filtrer les Intents Jeedom": "Filtrer les Intents Jeedom",
-        "Importe seulement les Intents de l'assistant dont le nom finit par 'Jeedom": "Importe seulement les Intents de l'assistant dont le nom finit par 'Jeedom",
+        "Importe seulement les Intents de l'assistant dont le nom finit par 'Jeedom'": "Importe seulement les Intents de l'assistant dont le nom finit par 'Jeedom'",
         "Variables rhasspyWakeWord \/ rhasspyWakeSiteId": "Variables rhasspyWakeWord \/ rhasspyWakeSiteId",
         "Assigne ces deux variables avec le wakeId et le siteId ayant déclenché le wakeword.": "Assigne ces deux variables avec le wakeId et le siteId ayant déclenché le wakeword."
     }
