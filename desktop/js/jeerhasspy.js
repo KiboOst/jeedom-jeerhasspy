@@ -174,59 +174,6 @@ $('#intentsContainer .eqLogicDisplayCard').off('click').on('click', function () 
     initPickers()
 })
 
-//configure:
-$('#bt_configureIntRemote').off('click').on('click', function () {
-    $.hideAlert()
-      bootbox.confirm({
-        title: '<i class="fa fa-exclamation-triangle warning"></i> {{Configuration de l\'event <i>Intent Recognized</i>}}',
-        message: '<p>{{Cette action va modifier votre profil sur Rhasspy et redémarrer le service.}}</p>',
-        callback: function (result) {
-          if (result) {
-              _url = $('input[data-urlType="url_int"]').val()
-              configureRemoteHandle(_url)
-          }
-        }
-      })
-})
-$('#bt_configureExtRemote').off('click').on('click', function () {
-    $.hideAlert()
-      bootbox.confirm({
-        title: '<i class="fa fa-exclamation-triangle warning"></i> {{Configuration de l\'event <i>Intent Recognized</i>}}',
-        message: '<p>{{Cette action va modifier votre profil sur Rhasspy et redémarrer le service.}}</p>',
-        callback: function (result) {
-          if (result) {
-              _url = $('input[data-urlType="url_ext"]').val()
-              configureRemoteHandle(_url)
-          }
-        }
-      })
-})
-$('#bt_configureWakeEvent').off('click').on('click', function () {
-    $.hideAlert()
-    bootbox.prompt({
-        title: '<i class="fa fa-exclamation-triangle warning"></i> {{Configuration de l\'event <i>Wakeword Detected</i>}}',
-        message: '<p>{{Cette action va modifier votre profil sur Rhasspy et redémarrer le service.}}</p>',
-        inputType: 'select',
-        inputOptions: [
-            {
-                text: '{{Utiliser l\'url interne}}',
-                value: 'url_int',
-            },
-            {
-                text: '{{Utiliser l\'url externe}}',
-                value: 'url_ext',
-            }
-        ],
-        value: 'url_int',
-        callback: function (result) {
-            if (result == 'url_int' || result == 'url_ext') {
-                configureWakeEvent(result)
-            }
-        }
-    })
-})
-
-
 //panels:
 $('#devicesPanel .accordion-toggle').off('click').on('click', function () {
   setTimeout(function(){
@@ -290,18 +237,18 @@ $('#bt_addsatellite').off('click').on('click', function () {
                 message: '{{Vous devez indiquer l\'url complète du satellite (http://... ou https://...).}}',
                 level: 'danger'
             })
-          	bootbox.hideAll()
-          	return false
-      	}
+            bootbox.hideAll()
+            return false
+        }
         var checkAdrss = addr.replace('://', '')
         if (!checkAdrss.includes(":")){
             $('#div_alert').showAlert({
                 message: '{{Vous devez indiquer l\'url complète du satellite (exemple: http://192.168.0.10:12101).}}',
                 level: 'danger'
             })
-          	bootbox.hideAll()
-          	return false
-      	}
+            bootbox.hideAll()
+            return false
+        }
         addSatellite(siteId, addr)
       }
     }
