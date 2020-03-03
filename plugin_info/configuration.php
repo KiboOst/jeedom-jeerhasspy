@@ -38,7 +38,7 @@ if (!isConnect()) {
 
         <div class="form-group">
             <label class="col-lg-4 control-label" >{{Filtrer les Intents Jeedom}}
-                <sup><i class="fas fa-question-circle" title="{{Importe seulement les Intents de l'assistant dont le nom finit par 'Jeedom'}}"></i></sup>
+                <sup><i class="fas fa-question-circle" title="{{Importe seulement les Intents de l'assistant dont le nom finit par 'Jeedom'.}}"></i></sup>
             </label>
             <div class="col-lg-4">
                 <input type="checkbox" class="configKey" data-l1key="filterJeedomIntents" checked/>
