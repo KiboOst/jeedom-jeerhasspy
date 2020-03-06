@@ -23,9 +23,10 @@ sendVarToJS('_scenarios', $_scenarios);
 	<thead>
 		<tr>
 			<th>{{Intent}}</th>
+			<th data-sorter="checkbox" data-filter="false">{{Actif}}</th>
+			<th data-sorter="checkbox" data-filter="false">{{Interact}}</th>
 			<th data-sorter="select">{{Scénario}}</th>
 			<th data-sorter="select" data-filter="false">{{Action}}</th>
-			<th data-sorter="checkbox" data-filter="false">{{Actif}}</th>
 			<th data-sorter="inputs" data-filter="false">{{Min.Conf}}</th>
 			<th data-sorter="false" data-filter="false">{{Tags}}</th>
 			<th data-sorter="false" data-filter="true">{{UserTags}}</th>
@@ -41,7 +42,7 @@ sendVarToJS('_scenarios', $_scenarios);
 initTableSorter()
 refreshIntentsSummary()
 var tableIntcSummary = $('#table_intentsSummary')
-tableIntcSummary[0].config.widgetOptions.resizable_widths = ['', '', '120px', '45px', '95px', '70px', '160px', '40px']
+tableIntcSummary[0].config.widgetOptions.resizable_widths = ['','70px', '90px', '', '120px', '95px', '70px', '160px', '40px']
 tableIntcSummary.trigger('applyWidgets')
 tableIntcSummary.trigger('resizableReset')
 tableIntcSummary.trigger('sorton', [[[1,0]]])
@@ -53,6 +54,36 @@ $('#bt_refreshIntentsSummary').off().on('click',function() {
 $('#bt_saveIntentsSummary').off().on('click',function() {
 	saveIntentsSummary()
 })
+
+$("#table_intentsSummary").delegate('.bt_summaryLogScenario', 'click', function () {
+	var scId = $(this).closest('.intent').find('select[data-l3key="scenario"]').val()
+	if (!scId) return
+	$("#md_modal2").dialog({title: "{{Log d'exécution du scénario}}"})
+	$("#md_modal2").load('index.php?v=d&modal=scenario.log.execution&scenario_id=' + scId).dialog('open')
+	var modal = $('.ui-dialog[aria-describedby="md_modal2"]')
+	modal.css({top: modal.position().top - 20 + "px"})
+})
+
+$("#table_intentsSummary").delegate('input[data-l2key="isInteract"]', 'change', function() {
+  updateIsInteract($(this).closest('tr').data('id'))
+})
+
+function updateIsInteract(_id) {
+	var _tr = $('tr[data-id="'+_id+'"]')
+	if (_tr.find('input[data-l2key="isInteract"]').prop('checked')) {
+		_tr.find('select[data-l3key="scenario"]').prop('disabled', 'disabled')
+		_tr.find('select[data-l3key="action"]').prop('disabled', 'disabled')
+		_tr.find('input[data-l3key="minConfidence"]').prop('disabled', 'disabled')
+		_tr.find('.callbackScTagsToggle').prop('disabled', 'disabled')
+		_tr.find('input[data-l3key="user_tags"]').prop('disabled', 'disabled')
+	} else {
+		_tr.find('select[data-l3key="scenario"]').removeAttr('disabled')
+		_tr.find('select[data-l3key="action"]').removeAttr('disabled')
+		_tr.find('input[data-l3key="minConfidence"]').removeAttr('disabled')
+		_tr.find('.callbackScTagsToggle').removeAttr('disabled')
+		_tr.find('input[data-l3key="user_tags"]').removeAttr('disabled')
+	}
+}
 
 function refreshIntentsSummary() {
 	jeedom.eqLogic.byType({
@@ -72,6 +103,14 @@ function refreshIntentsSummary() {
 				tr += '<input class="eqLogicAttr hidden" data-l1key="id">'
 				tr += '<input class="eqLogicAttr hidden" data-l1key="configuration" data-l2key="type">'
 				tr += '<span class="eqLogicAttr" data-l1key="name"></span>'
+				tr += '</td>'
+
+				tr += '<td>'
+				tr += '<center><input type="checkbox" class="eqLogicAttr" data-label-text="{{Actif}}" data-l1key="isEnable"></center>'
+				tr += '</td>'
+
+				tr += '<td>'
+				tr += '<center><input type="checkbox" class="eqLogicAttr" data-label-text="{{Interact}}" data-l1key="configuration" data-l2key="isInteract"></center>'
 				tr += '</td>'
 
 				tr += '<td>'
@@ -95,15 +134,11 @@ function refreshIntentsSummary() {
 				tr += '</td>'
 
 				tr += '<td>'
-				tr += '<center><input type="checkbox" class="eqLogicAttr" data-label-text="{{Actif}}" data-l1key="isEnable"></center>'
-				tr += '</td>'
-
-				tr += '<td>'
 				tr += ' <input style="width: 100%;" type="number" value="0" min="0" max="1" step="0.1" class="eqLogicAttr input-sm" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="minConfidence" />';
 				tr += '</td>'
 
 				tr += '<td>'
-				tr += '<button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">'
+				tr += '<button type="button" class="btn btn-default btn-sm dropdown-toggle callbackScTagsToggle" data-toggle="dropdown">'
 					tr += '<i class="fas fa-tags"></i>&nbsp;&nbsp;&nbsp;<span class="caret"></span>'
 				tr += '</button>'
 				tr += '<ul class="dropdown-menu" role="menu" style="top:unset;left:unset;">'
@@ -133,18 +168,8 @@ function refreshIntentsSummary() {
 			$('#table_intentsSummary tbody').append(table)
 			$("#table_intentsSummary").trigger("update")
 
-			$('.bt_summaryGotoScenario').off().on('click', function() {
-				var scId = $(this).data('scid')
-				var url = 'index.php?v=d&p=scenario&id='+scId
-				window.open(url).focus()
-			})
-
-			$('.bt_summaryLogScenario').off('click').on('click', function () {
-				var scId = $(this).closest('.intent').find('select[data-l3key="scenario"]').val()
-				$("#md_modal2").dialog({title: "{{Log d'exécution du scénario}}"})
-				$("#md_modal2").load('index.php?v=d&modal=scenario.log.execution&scenario_id=' + scId).dialog('open')
-				var modal = $('.ui-dialog[aria-describedby="md_modal2"]')
-				modal.css({top: modal.position().top - 20 + "px"})
+			$('input[data-l2key="isInteract"]').each(function (index, el) {
+				updateIsInteract($(this).closest('tr').data('id'))
 			})
 		}
 	})
@@ -165,20 +190,5 @@ function saveIntentsSummary() {
 		})
 	})
 	refreshIntentsSummary()
-
-	/*
-	var intents = $('#table_intentsSummary tbody .intent').getValues('.eqLogicAttr')
-	jeedom.eqLogic.save({
-		eqLogics : intents,
-		type: 'jeerhasspy',
-		error: function (error) {
-			$('#div_alertIntentsSummary').showAlert({message: error.message, level: 'danger'})
-		},
-		success : function(data){
-			$('#div_alertIntentsSummary').showAlert({message: '{{Sauvegarde effectuée}}', level: 'success'});
-			refreshIntentsSummary()
-		}
-	})
-	*/
 }
 </script>

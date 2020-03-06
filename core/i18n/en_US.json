@@ -4,9 +4,9 @@
         "Aucune méthode correspondante à : ": "No method corresponding to: "
     },
     "plugins\/jeerhasspy\/desktop\/js\/jeerhasspy.js": {
-        "Importation de l'assistant": "Assistant import",
+        "Importation de l\\'assistant": "Assistant import",
         "Conserver toutes les Intentions": "Keep all Intentions",
-        "Supprimer les Intentions qui ne sont plus dans l'assistant": "Delete Intentions that are no longer in the assistant",
+        "Supprimer les Intentions qui ne sont plus dans l\\'assistant": "Delete Intentions that are no longer in the assistant",
         "Supprimer et recréer toutes les Intentions": "Delete and recreate all Intentions",
         "Vous devez indiquer l'url complète du satellite (http:\/\/... ou https:\/\/...).": "You must indicate the complete satellite url (http:\/\/... ou https:\/\/...).",
         "Vous devez indiquer l'url complète du satellite (exemple: http:\/\/192.168.0.10:12101).": "You must indicate the complete satellite url (example: http:\/\/192.168.0.10:12101).",
@@ -28,6 +28,7 @@
         "Scénario": "Scenario",
         "Action": "Action",
         "Actif": "Active",
+        "Interact": "Interact",
         "Min.Conf": "Min.Conf",
         "Tags": "Tags",
         "UserTags": "UserTags",
@@ -79,6 +80,8 @@
         "Nom": "Name",
         "Activer": "Enable",
         "Groupe": "Group",
+        "Interaction": "Interaction",
+        "Utilise le moteur d'interaction de Jeedom au lieu d'un scénario.": "Use Jeedom interact engine instead of callback scenario.",
         "Groupe de l'Intention": "Intention group",
         "Callback Scenario": "Callback Scenario",
         "Scenario": "Scenario",
