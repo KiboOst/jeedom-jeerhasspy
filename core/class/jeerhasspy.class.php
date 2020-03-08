@@ -75,7 +75,7 @@ class jeerhasspy extends eqLogic {
 
                     if (!$isAskAnswer) {
                         RhasspyUtils::logger('Event received: '.json_encode($payload));
-                      	$speakDefault = false;
+                        $speakDefault = false;
                         $eqLogic = eqLogic::byLogicalId($intentName, 'jeerhasspy');
                         if (is_object($eqLogic) && $eqLogic->getIsEnable() == 1)
                         {
@@ -92,9 +92,9 @@ class jeerhasspy extends eqLogic {
                                 return;
                             }
                             //callback scenario
-                          	$callbackScenario = $eqLogic->getConfiguration('callbackScenario');
-                          	$minConfidence = 0;
-                          	if (isset($callbackScenario['minConfidence'])) $minConfidence = floatval($callbackScenario['minConfidence']);
+                            $callbackScenario = $eqLogic->getConfiguration('callbackScenario');
+                            $minConfidence = 0;
+                            if (isset($callbackScenario['minConfidence'])) $minConfidence = floatval($callbackScenario['minConfidence']);
                             if ($minConfidence <= floatval($payload['intent']['confidence'])) {
                               $_exec = $eqLogic->exec_callback_scenario($payload);
                               if (!$_exec) $speakDefault = true;
@@ -104,7 +104,7 @@ class jeerhasspy extends eqLogic {
                         } else {
                             $speakDefault = true;
                         }
-                      	if ($speakDefault) $_answerToRhasspy['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
+                        if ($speakDefault) $_answerToRhasspy['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
                     }
                 }
                 //always answer to rhasspy:
@@ -190,7 +190,7 @@ class jeerhasspyCmd extends cmd {
     public function execute($options = array())
     {
         $eqlogic = $this->getEqLogic();
-        RhasspyUtils::logger($eqlogic->getName());
+        RhasspyUtils::logger($eqlogic->getName().'.'.$this->getLogicalId().'() | '.json_encode($options));
         switch ($this->getLogicalId()) {
             case 'speak':
                 $this->rhasspy_speak($options);
@@ -206,19 +206,27 @@ class jeerhasspyCmd extends cmd {
 
     public function rhasspy_speak($options = array())
     {
+        RhasspyUtils::logger($options);
         $eqName = $this->getEqLogic()->getName();
         $siteId = str_replace('TTS-', '', $eqName);
-        $options['title'] = $siteId;
-        RhasspyUtils::logger($options);
+        if ($options['title'] == '') {
+            $options['title'] = $siteId;
+        } elseif (substr($options['title'], 0, 1) == ':') {
+            $options['title'] = $siteId.$options['title'];
+        }
         RhasspyUtils::textToSpeech($options);
     }
 
     public function rhasspy_dynamicSpeak($options = array())
     {
+        RhasspyUtils::logger($options);
         $eqName = $this->getEqLogic()->getName();
         $siteId = str_replace('TTS-', '', $eqName);
-        $options['title'] = $siteId;
-        RhasspyUtils::logger($options['message']);
+        if ($options['title'] == '') {
+            $options['title'] = $siteId;
+        } elseif (substr($options['title'], 0, 1) == ':') {
+            $options['title'] = $siteId.$options['title'];
+        }
         $options['message'] = RhasspyUtils::evalDynamicString($options['message']);
         RhasspyUtils::textToSpeech($options);
     }
