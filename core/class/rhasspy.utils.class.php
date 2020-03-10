@@ -312,6 +312,9 @@ class RhasspyUtils
 				$eqLogic->setObject_id($_parentObjectId);
 				$eqLogic->setConfiguration('type', 'intent');
 				$eqLogic->save();
+			} elseif ($eqLogic->getObject_id() != $_parentObjectId) {
+				$eqLogic->setObject_id($_parentObjectId);
+				$eqLogic->save();
 			}
 		}
 	}
@@ -332,6 +335,7 @@ class RhasspyUtils
 			}
 			//only one master:
 			if ($eqMaster) {
+				$eqMaster->setObject_id($_parentObjectId);
 				$eqMaster->setLogicalId('TTS-'.$_deviceName);
 				$eqMaster->setName('TTS-'.$_deviceName);
 				$eqMaster->save();
