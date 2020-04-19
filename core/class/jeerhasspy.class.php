@@ -48,8 +48,7 @@ class jeerhasspy extends eqLogic {
                 $intentName = $payload['intent']['name'];
                 $payload['site_id'] = explode(',', $payload['site_id'])[0];
 
-                //If wakeword_id null, ignore (ask answer):
-                if ($intentName != '' && $payload['wakeword_id'] != null) {
+                if ($intentName != '') {
                     RhasspyUtils::logger('Intent Recognized: '.json_encode($payload));
 
                     $eqLogic = eqLogic::byLogicalId($intentName, 'jeerhasspy');
@@ -74,7 +73,8 @@ class jeerhasspy extends eqLogic {
                         if (isset($callbackScenario['minConfidence'])) $minConfidence = floatval($callbackScenario['minConfidence']);
                         if ($minConfidence <= floatval($payload['intent']['confidence'])) {
                           $_exec = $eqLogic->exec_callback_scenario($payload);
-                          if (!$_exec) $speakDefault = true;
+                          //no scenario executed, if no wakeword_id should be ask answer.
+                          if (!$_exec && $payload['wakeword_id'] != null) $speakDefault = true;
                         } else {
                           $speakDefault = true;
                         }
@@ -84,7 +84,7 @@ class jeerhasspy extends eqLogic {
 
                     if ($speakDefault) $_answerToRhasspy['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
                 } else {
-                    RhasspyUtils::logger('Unrecognized payload or no wakeword_id.');
+                    RhasspyUtils::logger('Unrecognized payload.');
                 }
                 //always answer to rhasspy:
                 header('Content-Type: application/json');
