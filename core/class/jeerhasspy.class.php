@@ -88,6 +88,8 @@ class jeerhasspy extends eqLogic {
                 header('Content-Type: application/json');
                 echo json_encode($_answerToRhasspy);
                 return;
+            } else {
+                RhasspyUtils::logger('Unrecognized payload or no wakeword_id.');
             }
         }
     }
@@ -99,6 +101,7 @@ class jeerhasspy extends eqLogic {
         RhasspyUtils::logger('callback_settings: '.json_encode($callback_settings));
 
         if (!is_array($callback_settings) || $callback_settings['scenario'] == '-1') {
+            RhasspyUtils::logger('No scenario defined for this intent.');
             return false;
         }
 
