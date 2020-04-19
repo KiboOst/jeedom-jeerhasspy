@@ -83,13 +83,13 @@ class jeerhasspy extends eqLogic {
                     }
 
                     if ($speakDefault) $_answerToRhasspy['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
+                } else {
+                    RhasspyUtils::logger('Unrecognized payload or no wakeword_id.');
                 }
                 //always answer to rhasspy:
                 header('Content-Type: application/json');
                 echo json_encode($_answerToRhasspy);
                 return;
-            } else {
-                RhasspyUtils::logger('Unrecognized payload or no wakeword_id.');
             }
         }
     }
