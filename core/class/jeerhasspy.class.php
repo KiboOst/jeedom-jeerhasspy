@@ -25,87 +25,64 @@ class jeerhasspy extends eqLogic {
 
     //rhasspy called endpoint forwarded by jeeAPI:
     public static function event() {
+        RhasspyUtils::logger('__RAW__: '.file_get_contents('php://input'));
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $payload = json_decode(file_get_contents('php://input'), true);
+
             //wakeword received:
-            if (isset($payload['wakewordId'])) {
+            if (isset($payload['modelId']) && !isset($payload['intent'])) {
                 if (config::byKey('setWakeVariables', 'jeerhasspy') == '1') {
-                    $payload['siteId'] = explode(',', $payload['siteId'])[0];
-                    scenario::setData('rhasspyWakeWord', $payload['wakewordId']);
-                    scenario::setData('rhasspyWakeSiteId', $payload['siteId']);
-                    RhasspyUtils::logger('Set variables: rhasspyWakeWord | rhasspyWakeSiteId: '.$payload['wakewordId'].' | '.$payload['siteId']);
+                    $siteId = explode(',', $payload['siteId'])[0];
+                    scenario::setData('rhasspyWakeWord', $payload['modelId']);
+                    scenario::setData('rhasspyWakeSiteId', $siteId);
+                    RhasspyUtils::logger('Awake -> set variables: rhasspyWakeWord->'.$payload['modelId'].' | rhasspyWakeSiteId->'.$siteId);
                 }
                 return;
             }
 
             $_answerToRhasspy = array('speech' => array('text' => ''));
+            $speakDefault = false;
+
             //intent received:
             if (isset($payload['intent']) && isset($payload['intent']['name'])) {
                 $intentName = $payload['intent']['name'];
-                $payload['siteId'] = explode(',', $payload['siteId'])[0];
-                if ($intentName != '') {
-                    //check if Ask answer:
-                    $isAskAnswer = false;
-                    if (isset($payload['entities'])) {
-                        $askData = false;
-                        foreach ($payload['entities'] as $entity) {
-                            if ($entity['entity'] == 'askData') {
-                                $isAskAnswer = true;
-                                $askData = $entity['value'];
-                                break;
+                $payload['site_id'] = explode(',', $payload['site_id'])[0];
+
+                //If wakeword_id null, ignore (ask answer):
+                if ($intentName != '' && $payload['wakeword_id'] != null) {
+                    RhasspyUtils::logger('Intent Recognized: '.json_encode($payload));
+
+                    $eqLogic = eqLogic::byLogicalId($intentName, 'jeerhasspy');
+                    if (is_object($eqLogic) && $eqLogic->getIsEnable() == 1) {
+
+                        //interact
+                        if ($eqLogic->getConfiguration('isInteract')) {
+                            RhasspyUtils::logger('Send query to interact engine!');
+                            $reply = interactQuery::tryToReply($payload['text']);
+                            if (trim($reply['reply']) != '') {
+                                $_options = array();
+                                $_options['title'] = $payload['site_id'];
+                                $_options['message'] = $reply['reply'];
+                                RhasspyUtils::textToSpeech($_options);
                             }
+                            return;
                         }
-                        if ($askData) {
-                            $data = explode('::', $askData);
-                            $answerEntity = $data[0];
-                            $answerVariable = $data[1];
-                            $answer = false;
-                            foreach ($payload['entities'] as $entity) {
-                                if ($entity['entity'] == $answerEntity) {
-                                    $answer = $entity['value'];
-                                    break;
-                                }
-                            }
-                            if ($answer) {
-                                RhasspyUtils::logger('Ask answer received, set answer variable: '.$answer);
-                                scenario::setData($answerVariable, $answer);
-                            }
+
+                        //callback scenario
+                        $callbackScenario = $eqLogic->getConfiguration('callbackScenario');
+                        $minConfidence = 0;
+                        if (isset($callbackScenario['minConfidence'])) $minConfidence = floatval($callbackScenario['minConfidence']);
+                        if ($minConfidence <= floatval($payload['intent']['confidence'])) {
+                          $_exec = $eqLogic->exec_callback_scenario($payload);
+                          if (!$_exec) $speakDefault = true;
+                        } else {
+                          $speakDefault = true;
                         }
+                    } else {
+                        $speakDefault = true;
                     }
 
-                    if (!$isAskAnswer) {
-                        RhasspyUtils::logger('Event received: '.json_encode($payload));
-                        $speakDefault = false;
-                        $eqLogic = eqLogic::byLogicalId($intentName, 'jeerhasspy');
-                        if (is_object($eqLogic) && $eqLogic->getIsEnable() == 1)
-                        {
-                            //interact
-                            if ($eqLogic->getConfiguration('isInteract')) {
-                                RhasspyUtils::logger('Send query to interact engine!');
-                                $reply = interactQuery::tryToReply($payload['text']);
-                                if (trim($reply['reply']) != '') {
-                                    $_options = array();
-                                    $_options['title'] = $payload['siteId'];
-                                    $_options['message'] = $reply['reply'];
-                                    RhasspyUtils::textToSpeech($_options);
-                                }
-                                return;
-                            }
-                            //callback scenario
-                            $callbackScenario = $eqLogic->getConfiguration('callbackScenario');
-                            $minConfidence = 0;
-                            if (isset($callbackScenario['minConfidence'])) $minConfidence = floatval($callbackScenario['minConfidence']);
-                            if ($minConfidence <= floatval($payload['intent']['confidence'])) {
-                              $_exec = $eqLogic->exec_callback_scenario($payload);
-                              if (!$_exec) $speakDefault = true;
-                            } else {
-                              $speakDefault = true;
-                            }
-                        } else {
-                            $speakDefault = true;
-                        }
-                        if ($speakDefault) $_answerToRhasspy['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
-                    }
+                    if ($speakDefault) $_answerToRhasspy['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
                 }
                 //always answer to rhasspy:
                 header('Content-Type: application/json');
@@ -153,9 +130,9 @@ class jeerhasspy extends eqLogic {
 
         if ($_options['isTagIntent'] == '1') $tags['#intent#'] = $_payload['intent']['name'];
         if ($_options['isTagConfidence'] == '1') $tags['#confidence#'] = $_payload['intent']['confidence'];
-        if ($_options['isTagWakeword'] == '1') $tags['#wakeword#'] = $_payload['wakeId'];
+        if ($_options['isTagWakeword'] == '1') $tags['#wakeword#'] = $_payload['wakeword_id'];
         if ($_options['isTagQuery'] == '1') $tags['#query#'] = $_payload['text'];
-        if ($_options['isTagSiteId'] == '1') $tags['#siteId#'] = $_payload['siteId'];
+        if ($_options['isTagSiteId'] == '1') $tags['#siteId#'] = $_payload['site_id'];
 
         if ($_options['isTagEntities'] == '1') {
             foreach ($_payload['entities'] as $entity) {
@@ -193,18 +170,24 @@ class jeerhasspyCmd extends cmd {
         RhasspyUtils::logger($eqlogic->getName().'.'.$this->getLogicalId().'() | '.json_encode($options));
         switch ($this->getLogicalId()) {
             case 'speak':
-                $this->rhasspy_speak($options);
+                $this->speak($options);
                 break;
             case 'dynspeak':
-                $this->rhasspy_dynamicSpeak($options);
+                $this->dynamicSpeak($options);
                 break;
             case 'ask':
-                $this->rhasspy_ask($options);
+                $this->ask($options);
+                break;
+            case 'ledOn':
+                $this->setLEDs(1);
+                break;
+            case 'ledOff':
+                $this->setLEDs(0);
                 break;
         }
     }
 
-    public function rhasspy_speak($options = array())
+    public function speak($options = array())
     {
         RhasspyUtils::logger($options);
         $eqName = $this->getEqLogic()->getName();
@@ -217,7 +200,7 @@ class jeerhasspyCmd extends cmd {
         RhasspyUtils::textToSpeech($options);
     }
 
-    public function rhasspy_dynamicSpeak($options = array())
+    public function dynamicSpeak($options = array())
     {
         RhasspyUtils::logger($options);
         $eqName = $this->getEqLogic()->getName();
@@ -231,7 +214,7 @@ class jeerhasspyCmd extends cmd {
         RhasspyUtils::textToSpeech($options);
     }
 
-    public function rhasspy_ask($options = array())
+    public function ask($options = array())
     {
         $eqName = $this->getEqLogic()->getName();
         $siteId = str_replace('TTS-', '', $eqName);
@@ -243,6 +226,15 @@ class jeerhasspyCmd extends cmd {
         RhasspyUtils::textToSpeech($options);
 
         $options['askData'] = $answer_entity.'::'.$answer_variable;
-        RhasspyUtils::speakToAsk($options, $siteId);
+        RhasspyUtils::speakToAsk($siteId, $options);
+    }
+
+    public function setLEDs($state=1)
+    {
+        $eqName = $this->getEqLogic()->getName();
+        $siteId = str_replace('TTS-', '', $eqName);
+        RhasspyUtils::logger($state.' siteId: '.$siteId);
+
+        RhasspyUtils::setLEDs($state, $siteId);
     }
 }

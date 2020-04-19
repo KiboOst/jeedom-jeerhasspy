@@ -1,7 +1,8 @@
 {
     "plugins\/jeerhasspy\/core\/ajax\/jeerhasspy.ajax.php": {
         "401 - Accès non autorisé": "401 - Unauthorized access",
-        "Aucune méthode correspondante à : ": "No method corresponding to: "
+        "Aucune méthode correspondante à : ": "No method corresponding to: ",
+        "Désolé, ce satellite est introuvable.": "Sorry, can't find this satellite."
     },
     "plugins\/jeerhasspy\/desktop\/js\/jeerhasspy.js": {
         "Importation de l\\'assistant": "Assistant import",
@@ -43,6 +44,14 @@
         "Log": "Log",
         "Log d'exécution du scénario": "Scenario execution log",
         "Sauvegarde effectuée": "Save completed"
+    },
+    "plugins\/jeerhasspy\/core\/class\/rhasspy.utils.class.php": {
+        "Impossible de se connecter à votre Rhasspy !": "Could not connect to Rhasspy!",
+        "Version de Rhasspy non supportée. jeeRhasspy nécessite Rhasspy v2.5 ou plus.": "Invalid Rhasspy version. jeeRhasspy support Rhasspy v2.5 and up.",
+        "Impossible de se connecter à ce satellite.": "Could not connect to this satellite!",
+        "Impossible de récupérer le siteId de ce satellite.": "Could not get siteId from this satellite.",
+        "Impossible de se connecter à ce Rhasspy.": "Could not connect to Rhasspy!",
+        "Impossible d'appliquer les paramètres à ce Rhasspy.": "Could not apply new settings to this Rhasspy!"
     },
     "plugins\/jeerhasspy\/desktop\/php\/jeerhasspy.php": {
         "401 - Accès non autorisé": "401 - Unauthorized access",
@@ -119,7 +128,7 @@
     "plugins\/jeerhasspy\/plugin_info\/configuration.php": {
         "Adresse du Rhasspy maître": "Address of the master Rhasspy",
         "Adresse IP de votre Rhasspy (maître).": "IP address of your Rhasspy (master).",
-        "Port du Rhasspy maître": "Port of Rhasspy master",
+        "Port du Rhasspy maître": "Port of master Rhasspy",
         "Port de votre Rhasspy (maître). 12101 par defaut": "Port of your Rhasspy (master). 12101 default",
         "Feedback": "Feedback",
         "Réponse si aucune correspondance n'est trouvée.": "Response if no match is found.",

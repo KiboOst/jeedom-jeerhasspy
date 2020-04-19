@@ -171,7 +171,7 @@ function initPickers() {
   }, 250)
 }
 $('#intentsContainer .eqLogicDisplayCard').off('click').on('click', function () {
-    initPickers()
+  initPickers()
 })
 
 //panels:
@@ -183,43 +183,43 @@ $('#devicesPanel .accordion-toggle').off('click').on('click', function () {
 $('#intentsPanels .accordion-toggle').off('click').on('click', function () {
   $thisContainer = $(this).closest('.panel').find('.eqLogicThumbnailContainer')
   setTimeout(function() {
-       $thisContainer.packery()
-    }, 100)
+     $thisContainer.packery()
+  }, 100)
 })
 
 //ui:
 $('#bt_loadAssistant').off('click').on('click', function () {
+  $.hideAlert()
   bootbox.prompt({
-      title: '<i class="fa fa-exclamation-triangle warning"></i> {{Importation de l\'assistant}}',
-      inputType: 'select',
-      inputOptions: [
-          {
-              text: '{{Conserver toutes les Intentions}}',
-              value: 'mode_keep',
-          },
-          {
-              text: '{{Supprimer les Intentions qui ne sont plus dans l\'assistant}}',
-              value: 'mode_clean',
-          },
-          {
-              text: '{{Supprimer et recréer toutes les Intentions}}',
-              value: 'mode_delete',
-          }
-      ],
-      value: 'mode_keep',
-      callback: function (result) {
-          if (result == 'mode_keep' || result == 'mode_clean' || result == 'mode_delete') {
-              $.hideAlert()
-              if (result == 'mode_delete') {
-                  deleteIntents()
-              }
-              var _cleanIntents = "0"
-              if (result == 'mode_clean') {
-                  _cleanIntents = "1"
-              }
-              loadAssistant(_cleanIntents)
-          }
+    title: '<i class="fa fa-exclamation-triangle warning"></i> {{Importation de l\'assistant}}',
+    inputType: 'select',
+    inputOptions: [
+      {
+        text: '{{Conserver toutes les Intentions}}',
+        value: 'mode_keep',
+      },
+      {
+        text: '{{Supprimer les Intentions qui ne sont plus dans l\'assistant}}',
+        value: 'mode_clean',
+      },
+      {
+        text: '{{Supprimer et recréer toutes les Intentions}}',
+        value: 'mode_delete',
       }
+    ],
+    value: 'mode_keep',
+    callback: function (result) {
+      if (result == 'mode_keep' || result == 'mode_clean' || result == 'mode_delete') {
+        if (result == 'mode_delete') {
+          deleteIntents()
+        }
+        var _cleanIntents = "0"
+        if (result == 'mode_clean') {
+          _cleanIntents = "1"
+        }
+        loadAssistant(_cleanIntents)
+      }
+    }
   })
 })
 
@@ -231,7 +231,6 @@ $('#bt_addsatellite').off('click').on('click', function () {
     callback: function (result) {
       if (result) {
         var addr = $('.bootbox-body #addSatelliteForm').find('input[name="addr"]').val()
-        var siteId = $('.bootbox-body #addSatelliteForm').find('input[name="siteId"]').val()
         if (!addr.startsWith("http")){
             $('#div_alert').showAlert({
                 message: '{{Vous devez indiquer l\'url complète du satellite (http://... ou https://...).}}',
@@ -249,23 +248,23 @@ $('#bt_addsatellite').off('click').on('click', function () {
             bootbox.hideAll()
             return false
         }
-        addSatellite(siteId, addr)
+        addSatellite(addr)
       }
     }
   })
 })
 
 $('#bt_deleteIntents').off('click').on('click', function () {
-    bootbox.confirm('{{Êtes-vous sûr de vouloir supprimer les intentions ?}}', function (result) {
-        if (result) {
-            deleteIntents()
-        }
-    })
+  $.hideAlert()
+  bootbox.confirm('{{Êtes-vous sûr de vouloir supprimer les intentions ?}}', function (result) {
+    if (result) {
+      deleteIntents()
+    }
+  })
 })
 
 $('#bt_showIntentsSummary').off('click').on('click', function () {
-  $('#md_modal').dialog({title: "{{Résumé des intentions}}"})
-      .load('index.php?v=d&plugin=jeerhasspy&modal=intents.summary').dialog('open')
+  $('#md_modal').dialog({title: "{{Résumé des intentions}}"}).load('index.php?v=d&plugin=jeerhasspy&modal=intents.summary').dialog('open')
 })
 
 //UI devices:
@@ -273,11 +272,11 @@ $('.bt_deleteSat').off('click').on('click', function () {
   $.hideAlert()
   var _id = $(this).closest('.jeeRhasspyDeviceCard').data('eqlogic_id')
   bootbox.confirm('{{Êtes-vous sûr de vouloir supprimer ce satellite ?}}', function (result) {
-      if (result) {
-          deleteSatellite(_id)
-          $('.jeeRhasspyDeviceCard[data-eqlogic_id="'+_id+'"]').remove()
-          $('.eqLogicThumbnailContainer').packery()
-      }
+    if (result) {
+      deleteSatellite(_id)
+      $('.jeeRhasspyDeviceCard[data-eqlogic_id="'+_id+'"]').remove()
+      $('.eqLogicThumbnailContainer').packery()
+    }
   })
 })
 
@@ -299,26 +298,26 @@ $('.bt_configure').off('click').on('click', function () {
 })
 
 $('.bt_speakTest').off('click').on('click', function () {
-    $.hideAlert()
-    var site_id = $(this).closest('.jeeRhasspyDeviceCard').data('site_id')
-    $.ajax({
-        type: "POST",
-        url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
-        data: {
-            action: "test",
-            siteId: site_id
-        },
-        dataType: 'json',
-        error: function (request, status, error) {
-            handleAjaxError(request, status, error)
-        },
-        success: function (data) {
-            $('#div_alert').showAlert({
-                message: '{{Test TTS envoyé.}}',
-                level: 'success'
-            })
-        }
-    })
+  $.hideAlert()
+  var site_id = $(this).closest('.jeeRhasspyDeviceCard').data('site_id')
+  $.ajax({
+    type: "POST",
+    url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
+    data: {
+      action: "test",
+      siteId: site_id
+    },
+    dataType: 'json',
+    error: function (request, status, error) {
+      handleAjaxError(request, status, error)
+    },
+    success: function (data) {
+      $('#div_alert').showAlert({
+        message: '{{Test TTS envoyé.}}',
+        level: 'success'
+      })
+    }
+  })
 })
 
 $('.bt_goToDevice').off('click').on('click', function () {
@@ -328,19 +327,19 @@ $('.bt_goToDevice').off('click').on('click', function () {
 
 
 $(function() {
-    $('select[data-l2key="callbackScenario"]').off().on('change', function () {
-        if ($(this).val() != null) {
-            var select = $('select[data-l3key="action"]')
-            if (select.val() == null) {
-              let value = select.find('option:eq(0)').val()
-              select.val(value).change()
-            }
-        }
-    })
-
-    if ($('input[data-l2key="isInteract"]').prop('checked')) {
-      $('#intentScenario').hide()
+  $('select[data-l2key="callbackScenario"]').off().on('change', function () {
+    if ($(this).val() != null) {
+      var select = $('select[data-l3key="action"]')
+      if (select.val() == null) {
+        let value = select.find('option:eq(0)').val()
+        select.val(value).change()
+      }
     }
+  })
+
+  if ($('input[data-l2key="isInteract"]').prop('checked')) {
+    $('#intentScenario').hide()
+  }
 })
 
 $('input[data-l2key="isInteract"]').change(function() {
@@ -352,8 +351,8 @@ $('input[data-l2key="isInteract"]').change(function() {
 })
 
 $('.bt_openScenario').off('click').on('click', function () {
-    var url = 'index.php?v=d&p=scenario&id=' + $('select[data-l2key="callbackScenario"]').val()
-    window.open(url).focus()
+  var url = 'index.php?v=d&p=scenario&id=' + $('select[data-l2key="callbackScenario"]').val()
+  window.open(url).focus()
 })
 
 $('.bt_logScenario').off('click').on('click', function () {
@@ -396,95 +395,94 @@ function loadAssistant(_cleanIntents) {
 }
 
 function deleteIntents() {
-    $.hideAlert()
-    $.ajax({
-        type: "POST",
-        url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
-        data: {
-            action: "deleteIntents",
-        },
-        dataType: 'json',
-        error: function (request, status, error) {
-            handleAjaxError(request, status, error)
-        },
-        success: function (data) {
-            if (data.state != 'ok') {
-                $('#div_alert').showAlert({message: data.result, level: 'danger'})
-                return;
-            }
-            $('#intentsContainer').empty()
-            $('#div_alert').showAlert({message: '{{Suppression réussie, veuillez recharger la page (F5).}}', level: 'success'})
-        }
-    })
+  $.hideAlert()
+  $.ajax({
+    type: "POST",
+    url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
+    data: {
+    action: "deleteIntents",
+    },
+    dataType: 'json',
+    error: function (request, status, error) {
+      handleAjaxError(request, status, error)
+    },
+    success: function (data) {
+      if (data.state != 'ok') {
+        $('#div_alert').showAlert({message: data.result, level: 'danger'})
+        return;
+      }
+      $('#intentsContainer').empty()
+      $('#div_alert').showAlert({message: '{{Suppression réussie, veuillez recharger la page (F5).}}', level: 'success'})
+    }
+  })
 }
 
 function deleteSatellite(_id) {
-    $.hideAlert()
-    $.ajax({
-        type: "POST",
-        url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
-        data: {
-            action: "deleteSatellite",
-            id: _id,
-        },
-        dataType: 'json',
-        error: function (request, status, error) {
-            handleAjaxError(request, status, error)
-        },
-        success: function (data) {
-            if (data.state != 'ok') {
-                $('#div_alert').showAlert({message: data.result, level: 'danger'})
-                return;
-            }
-            $('#div_alert').showAlert({message: '{{Suppression du satellite réussie.}}', level: 'success'})
-        }
-    })
+  $.hideAlert()
+  $.ajax({
+    type: "POST",
+    url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
+    data: {
+      action: "deleteSatellite",
+      id: _id,
+    },
+    dataType: 'json',
+    error: function (request, status, error) {
+      handleAjaxError(request, status, error)
+    },
+    success: function (data) {
+      if (data.state != 'ok') {
+        $('#div_alert').showAlert({message: data.result, level: 'danger'})
+        return;
+      }
+      $('#div_alert').showAlert({message: '{{Suppression du satellite réussie.}}', level: 'success'})
+    }
+  })
 }
 
-function addSatellite(_siteId, _addr) {
-    $.hideAlert()
-    $.ajax({
-        type: "POST",
-        url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
-        data: {
-            action: "addSatellite",
-            addr: _addr,
-            siteId: _siteId,
-        },
-        dataType: 'json',
-        error: function (request, status, error) {
-            handleAjaxError(request, status, error)
-        },
-        success: function (data) {
-            if (data.state != 'ok') {
-                $('#div_alert').showAlert({message: data.result, level: 'danger'})
-                return;
-            }
-            $('#div_alert').showAlert({message: '{{Satellite ajouté, veuillez recharger la page (F5).}}', level: 'success'})
-        }
-    })
+function addSatellite(_addr) {
+  $.hideAlert()
+  $.ajax({
+    type: "POST",
+    url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
+    data: {
+      action: "addSatellite",
+      addr: _addr,
+    },
+    dataType: 'json',
+    error: function (request, status, error) {
+    handleAjaxError(request, status, error)
+    },
+    success: function (data) {
+      if (data.state != 'ok') {
+        $('#div_alert').showAlert({message: data.result, level: 'danger'})
+        return;
+      }
+      $('#div_alert').showAlert({message: '{{Satellite ajouté, veuillez recharger la page (F5).}}', level: 'success'})
+    }
+  })
 }
 
 function configureRhasspyProfile(_siteId, _url, _configRemote, _configWake) {
-    $.ajax({
-        url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
-        data: {
-            action: "configureRhasspyProfile",
-            siteId: _siteId,
-            url: _url,
-            configRemote: _configRemote,
-            configWake: _configWake
-        },
-        dataType: 'json',
-        error: function (request, status, error) {
-            handleAjaxError(request, status, error)
-        },
-        success: function (data) {
-            if (data.state != 'ok') {
-                $('#div_alert').showAlert({message: data.result, level: 'danger'})
-                return;
-            }
-            $('#div_alert').showAlert({message: '{{Configuration de votre Rhasspy réussie.}}', level: 'success'})
-        }
-    })
+  $.ajax({
+    url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
+    data: {
+      action: "configureRhasspyProfile",
+      siteId: _siteId,
+      url: _url,
+      configRemote: _configRemote,
+      configWake: _configWake
+    },
+    dataType: 'json',
+    error: function (request, status, error) {
+      handleAjaxError(request, status, error)
+    },
+    success: function (data) {
+      if (data.state != 'ok') {
+        $('#div_alert').showAlert({message: data.result, level: 'danger'})
+        return;
+      }
+      $('#div_alert').showAlert({message: '{{Configuration de votre Rhasspy réussie.}}', level: 'success'})
+    }
+  })
 }

@@ -45,23 +45,21 @@ try {
 	if (init('action') == 'deleteSatellite') {
 		$_id = init('id', null);
 		$eqLogic = eqLogic::byId($_id);
-		$result = $eqLogic->remove();
-		if ( isset($result['error']) ) {
-			ajax::error($result['error']);
+		if (!is_object($eqLogic)) {
+			throw new Exception(__('Désolé, ce satellite est introuvable.', __FILE__));
 		}
+		$eqLogic->remove();
 		ajax::success();
 	}
 
 	if (init('action') == 'addSatellite') {
 		$_addr = init('addr', null);
-		$_siteId = init('siteId', null);
-		$result = RhasspyUtils::create_rhasspy_deviceEqlogic($_siteId, 'satDevice', $_addr);
+		$result = RhasspyUtils::addSatellite($_addr);
 		if ( isset($result['error']) ) {
 			ajax::error($result['error']);
 		}
 		ajax::success();
 	}
-
 
 	if (init('action') == 'test') {
 		$siteId = init('siteId', null);

@@ -1,7 +1,8 @@
 {
     "plugins\/jeerhasspy\/core\/ajax\/jeerhasspy.ajax.php": {
         "401 - Accès non autorisé": "401 - Accès non autorisé",
-        "Aucune méthode correspondante à : ": "Aucune méthode correspondante à : "
+        "Aucune méthode correspondante à : ": "Aucune méthode correspondante à : ",
+        "Désolé, ce satellite est introuvable.": "Désolé, ce satellite est introuvable."
     },
     "plugins\/jeerhasspy\/desktop\/js\/jeerhasspy.js": {
         "Importation de l'assistant": "Importation de l'assistant",
@@ -43,6 +44,14 @@
         "Log": "Log",
         "Log d'exécution du scénario": "Log d'exécution du scénario",
         "Sauvegarde effectuée": "Sauvegarde effectuée"
+    },
+    "plugins\/jeerhasspy\/core\/class\/rhasspy.utils.class.php": {
+        "Impossible de se connecter à votre Rhasspy !": "Impossible de se connecter à votre Rhasspy !",
+        "Version de Rhasspy non supportée. jeeRhasspy nécessite Rhasspy v2.5 ou plus.": "Version de Rhasspy non supportée. jeeRhasspy nécessite Rhasspy v2.5 ou plus.",
+        "Impossible de se connecter à ce satellite.": "Impossible de se connecter à ce satellite.",
+        "Impossible de récupérer le siteId de ce satellite.": "Impossible de récupérer le siteId de ce satellite.",
+        "Impossible de se connecter à ce Rhasspy.": "Impossible de se connecter à ce Rhasspy.",
+        "Impossible d'appliquer les paramètres à ce Rhasspy.": "Impossible d'appliquer les paramètres à ce Rhasspy."
     },
     "plugins\/jeerhasspy\/desktop\/php\/jeerhasspy.php": {
         "401 - Accès non autorisé": "401 - Accès non autorisé",

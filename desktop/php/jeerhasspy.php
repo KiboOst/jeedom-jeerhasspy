@@ -453,12 +453,6 @@
               <input type="text" class="form-control" name="addr" placeholder="http://192.168.0.10:12101" />
           </div>
       </div>
-      <div class="form-group">
-          <label class="control-label col-sm-3">siteId</label>
-          <div class="col-sm-8">
-              <input type="text" class="form-control" name="siteId" />
-          </div>
-      </div>
   </form>
 </div>
 
