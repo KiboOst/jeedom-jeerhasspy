@@ -223,11 +223,10 @@ class RhasspyUtils
 		}
 
 		$answer = self::_request('POST', $url, $_text);
-		if ( isset($answer['error']) ) {
+		if ( isset($answer['error']) && strpos($_siteId, ',') === false) {
 			self::logger('jeeRhasspy:textToSpeech error -> '.$answer['error'], 'error');
 			return false;
 		}
-
 
 		return true;
 	}
