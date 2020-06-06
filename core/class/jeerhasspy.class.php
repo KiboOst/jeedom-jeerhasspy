@@ -76,7 +76,8 @@ class jeerhasspy extends eqLogic {
                           //no scenario executed, if no wakeword_id should be ask answer.
                           if (!$_exec && $payload['wakeword_id'] != null) $speakDefault = true;
                         } else {
-                          $speakDefault = true;
+                            RhasspyUtils::logger('Minimal confidence not reached: '.$minConfidence);
+                            $speakDefault = true;
                         }
                     } else {
                         $speakDefault = true;

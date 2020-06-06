@@ -6,23 +6,24 @@ class RhasspyUtils
 	protected static $_curlHdl = null;
 	protected static $_uri = false;
 
-	public function init($_siteId=null)
+	public function getURI($_siteId=null)
 	{
-		self::$_uri = None;
+		$_uri = None;
 		if (is_null($_siteId) || $_siteId == config::byKey('masterSiteId', 'jeerhasspy')) {
 			$Addr = config::byKey('rhasspyAddr', 'jeerhasspy');
 			if (substr($Addr, 0, 4) != 'http') $Addr = 'http://'.$Addr;
 			$port = config::byKey('rhasspyPort', 'jeerhasspy');
 			if ($port == '') $port = '12101';
-			self::$_uri = $Addr.':'.$port;
+			$_uri = $Addr.':'.$port;
 		} else {
 			$eqLogics = eqLogic::byType('jeerhasspy');
 			foreach ($eqLogics as $eqLogic) {
 				if ($eqLogic->getConfiguration('type') != 'satDevice') continue;
-				if ($eqLogic->getName() == 'TTS-'.$_siteId) self::$_uri = $eqLogic->getConfiguration('addr');
+				if ($eqLogic->getName() == 'TTS-'.$_siteId) $_uri = $eqLogic->getConfiguration('addr');
 			}
 		}
-		if ((self::$_uri==None) && ($_siteId != config::byKey('masterSiteId', 'jeerhasspy'))) self::init(config::byKey('masterSiteId', 'jeerhasspy'));
+		if (($_uri==None) && ($_siteId != config::byKey('masterSiteId', 'jeerhasspy'))) self::getURI(config::byKey('masterSiteId', 'jeerhasspy'));
+		return $_uri;
 	}
 
 	public static function logger($str = '', $level = 'debug')
@@ -37,10 +38,10 @@ class RhasspyUtils
 	public function loadAssistant($_cleanIntents="0") #called from ajax -> /api/...
 	{
 		self::logger('cleanIntents: '.$_cleanIntents);
-		self::init();
+		$_uri = self::getURI();
 
 		//load assistant version, checking right url:
-		$url = self::$_uri.'/api/version';
+		$url = $_uri.'/api/version';
 		$answer = self::_request('GET', $url);
 		if ( isset($answer['error']) ) {
 			$answer['error'] = __('Impossible de se connecter à votre Rhasspy !', __FILE__);
@@ -57,7 +58,7 @@ class RhasspyUtils
 		}
 
 		//load profile site_id
-		$url = self::$_uri.'/api/profile';
+		$url = $_uri.'/api/profile';
 		$profile = self::_request('GET', $url);
 		self::logger('profile: '.$profile['result']);
 		$profile = json_decode($profile['result'], true);
@@ -69,7 +70,7 @@ class RhasspyUtils
 		self::create_rhasspy_deviceEqlogic($masterName, 'masterDevice');
 
 		//load profiles, default language:
-		$url = self::$_uri.'/api/profiles';
+		$url = $_uri.'/api/profiles';
 		$profiles = self::_request('GET', $url);
 		$profiles = json_decode($profiles['result'], true);
 		config::save('defaultLang', $profiles['default_profile'], 'jeerhasspy');
@@ -77,7 +78,7 @@ class RhasspyUtils
 		self::create_rhasspy_intentObject();
 
 		//load intents:
-		$url = self::$_uri.'/api/intents';
+		$url = $_uri.'/api/intents';
 		$jsonIntents = self::_request('GET', $url);
 		self::logger('intents: '.$jsonIntents['result']);
 		$jsonIntents = json_decode($jsonIntents['result'], true);
@@ -182,8 +183,6 @@ class RhasspyUtils
 			$_siteId = config::byKey('masterSiteId', 'jeerhasspy');
 		}
 
-		self::init($_siteId);
-
 		//get either text or test:
 		$_text = $_options['message'];
 		if (is_null($_text)) {
@@ -210,31 +209,36 @@ class RhasspyUtils
 			}
 		}
 
+		$_siteId = str_replace(' ', '', $_siteId);
 		self::logger('_text: '.$_text.' | _siteId: '.$_siteId.' | lang: '.$_lang);
 
-		$uri = self::$_uri;
-		$url = $uri.'/api/text-to-speech?siteId='.$_siteId;
+		if (strpos($_siteId, ',') !== false) {
+			$_uri = self::getURI(explode(',', $_siteId)[0]);
+		} else {
+			$_uri = self::getURI($_siteId);
+		}
+		$url = $_uri.'/api/text-to-speech?siteId='.$_siteId;
 		if ($_lang) {
 			$url .= '&language='.$_lang;
 		}
 
 		$answer = self::_request('POST', $url, $_text);
-		if ( isset($answer['error']) ) {
+		if ( isset($answer['error']) && strpos($_siteId, ',') === false) {
 			self::logger('jeeRhasspy:textToSpeech error -> '.$answer['error'], 'error');
 			return false;
 		}
+
 		return true;
 	}
 
 	public function speakToAsk($_siteId=null, $_options=null) #api/listen-for-command (entity) | get direct curl answer to set variable
 	{
 		if (!is_array($_options)) return;
-		self::init($_siteId);
+		$_uri = self::getURI($_siteId);
 
 		self::logger($_siteId.'-> ask data: '.$_options['askData']);
 
-		$uri = self::$_uri;
-		$url = $uri.'/api/listen-for-command?entity=askData&value='.$_options['askData'];
+		$url = $_uri.'/api/listen-for-command?entity=askData&value='.$_options['askData'];
 		$answer = self::_request('POST', $url);
 		if ( isset($answer['error']) ) {
 			self::logger('jeeRhasspy:speakToAsk error -> '.$answer['error'], 'error');
@@ -275,12 +279,11 @@ class RhasspyUtils
 
 	public function setLEDs($_state, $_siteId) #/api/mqtt/hermes/ (topic)
 	{
-		self::init($_siteId);
-		$uri = self::$_uri;
+		$_uri = self::getURI($_siteId);
 		if ($_state == 0) {
-			$url = $uri.'/api/mqtt/hermes/leds/toggleOff';
+			$url = $_uri.'/api/mqtt/hermes/leds/toggleOff';
 		} else {
-			$url = $uri.'/api/mqtt/hermes/leds/toggleOn';
+			$url = $_uri.'/api/mqtt/hermes/leds/toggleOn';
 		}
 		$payload = '{"siteId":"'.$_siteId.'"}';
 
@@ -540,8 +543,8 @@ class RhasspyUtils
 	{
 		self::logger($_siteId.' _configRemote: '.$_configRemote.' _configWake: '.$_configWake);
 		self::logger('_url: '.$_url);
-		self::init($_siteId);
-		$url = self::$_uri.'/api/profile?layers=profile';
+		$_uri = self::getURI($_siteId);
+		$url = $_uri.'/api/profile?layers=profile';
 		$profile = self::_request('GET', $url);
 		if ( isset($answer['error']) ) {
 			$answer['error'] = __('Impossible de se connecter à ce Rhasspy.', __FILE__);
@@ -555,11 +558,11 @@ class RhasspyUtils
 		if ($_configRemote) {
 			$_newProfile['handle']['system'] = 'remote';
 			$_newProfile['handle']['remote']['url'] = $_url;
-			$url = self::$_uri.'/api/profile';
+			$url = $_uri.'/api/profile';
 			$result = self::_request('POST', $url, json_encode($_newProfile, JSON_UNESCAPED_SLASHES));
 
 			//check applied settings
-			$url = self::$_uri.'/api/profile?layers=profile';
+			$url = $_uri.'/api/profile?layers=profile';
 			$profile = self::_request('GET', $url);
 			$profile = json_decode($profile['result'], true);
 			if ($profile['handle']['remote']['url'] != $_url) {
@@ -571,11 +574,11 @@ class RhasspyUtils
 		if ($_configWake) {
 			$_newProfile = $profile;
 			$_newProfile['webhooks']['awake'][0] = $_url;
-			$url = self::$_uri.'/api/profile';
+			$url = $_uri.'/api/profile';
 			$result = self::_request('POST', $url, json_encode($_newProfile, JSON_UNESCAPED_SLASHES));
 
 			//check applied settings
-			$url = self::$_uri.'/api/profile?layers=profile';
+			$url = $_uri.'/api/profile?layers=profile';
 			$profile = self::_request('GET', $url);
 			$profile = json_decode($profile['result'], true);
 			if ($profile['webhooks']['awake'][0] != $_url) {
@@ -584,7 +587,7 @@ class RhasspyUtils
 			}
 		}
 
-		self::_request('POST', self::$_uri.'/api/restart', 'configureRhasspyProfile');
+		self::_request('POST', $_uri.'/api/restart', 'configureRhasspyProfile');
 	}
 
 	//CALLING FUNCTIONS===================================================
