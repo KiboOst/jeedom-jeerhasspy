@@ -188,14 +188,17 @@ class jeerhasspyCmd extends cmd {
             case 'ledOff':
                 $this->setLEDs(0);
                 break;
+            case 'setvol':
+                $this->setVolume($options);
+                break;
         }
     }
 
-    public function speak($options = array())
+    public function speak($options=array())
     {
-        RhasspyUtils::logger($options);
         $eqName = $this->getEqLogic()->getName();
         $siteId = str_replace('TTS-', '', $eqName);
+        RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
         if ($options['title'] == '') {
             $options['title'] = $siteId;
         } elseif (substr($options['title'], 0, 1) == ':') {
@@ -204,11 +207,11 @@ class jeerhasspyCmd extends cmd {
         RhasspyUtils::textToSpeech($options);
     }
 
-    public function dynamicSpeak($options = array())
+    public function dynamicSpeak($options=array())
     {
-        RhasspyUtils::logger($options);
         $eqName = $this->getEqLogic()->getName();
         $siteId = str_replace('TTS-', '', $eqName);
+        RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
         if ($options['title'] == '') {
             $options['title'] = $siteId;
         } elseif (substr($options['title'], 0, 1) == ':') {
@@ -218,7 +221,7 @@ class jeerhasspyCmd extends cmd {
         RhasspyUtils::textToSpeech($options);
     }
 
-    public function ask($options = array())
+    public function ask($options=array())
     {
         $eqName = $this->getEqLogic()->getName();
         $siteId = str_replace('TTS-', '', $eqName);
@@ -240,5 +243,14 @@ class jeerhasspyCmd extends cmd {
         RhasspyUtils::logger($state.' siteId: '.$siteId);
 
         RhasspyUtils::setLEDs($state, $siteId);
+    }
+
+    public function setVolume($options=array())
+    {
+        $eqName = $this->getEqLogic()->getName();
+        $siteId = str_replace('TTS-', '', $eqName);
+        RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
+
+        RhasspyUtils::setVolume($options['slider'], $siteId);
     }
 }
