@@ -31,7 +31,7 @@ class RhasspyUtils
 		if (is_array($str)) $str = json_encode($str);
 		$function_name = debug_backtrace(false, 2)[1]['function'];
 		$class_name = debug_backtrace(false, 2)[1]['class'];
-		$msg = '['.$class_name.'] <'. $function_name .'> '.$str;
+		$msg = '['.$class_name.'] '. $function_name .'() '.$str;
 		log::add('jeerhasspy', $level, $msg);
 	}
 
@@ -277,8 +277,11 @@ class RhasspyUtils
 		return true;
 	}
 
-	public function setLEDs($_state, $_siteId) #/api/mqtt/hermes/ (topic)
+	public function setLEDs($_state=1, $_siteId=null) #/api/mqtt/hermes/ (topic)
 	{
+		if (is_null($_siteId) || $_siteId == '') {
+			$_siteId = config::byKey('masterSiteId', 'jeerhasspy');
+		}
 		$_uri = self::getURI($_siteId);
 		if ($_state == 0) {
 			$url = $_uri.'/api/mqtt/hermes/leds/toggleOff';
@@ -290,6 +293,26 @@ class RhasspyUtils
 		$answer = self::_request('POST', $url, $payload);
 		if ( isset($answer['error']) ) {
 			self::logger('jeeRhasspy:setLEDs error -> '.$answer['error'], 'error');
+			return false;
+		}
+		return true;
+	}
+
+	public function setVolume($_level=1, $_siteId=null) #/api/set-volume (siteId | level)
+	{
+		if (is_null($_siteId) || $_siteId == '') {
+			$_siteId = config::byKey('masterSiteId', 'jeerhasspy');
+		}
+		if ($_level > 1) $_level = 1;
+		if ($_level < 0) $_level = 0;
+		$_uri = self::getURI($_siteId);
+		$url = $_uri.'/api/set-volume?siteId='.$_siteId;
+
+		self::logger('jeeRhasspy:setVolume  -> '.$url);
+
+		$answer = self::_request('POST', $url, $_level);
+		if ( isset($answer['error']) ) {
+			self::logger('jeeRhasspy:setVolume error -> '.$answer['error'], 'error');
 			return false;
 		}
 		return true;
@@ -504,6 +527,20 @@ class RhasspyUtils
 		$ledOffCmd->setSubType('other');
 		$ledOffCmd->setOrder(4);
 		$ledOffCmd->save();
+
+		//setVolume:
+		$setVolCmd = $eqLogic->getCmd(null, 'setvol');
+		if (!is_object($setVolCmd)) {
+			$setVolCmd = new jeerhasspyCmd();
+			$setVolCmd->setName('setVolume');
+			$setVolCmd->setIsVisible(1);
+		}
+		$setVolCmd->setEqLogic_id($eqLogic->getId());
+		$setVolCmd->setLogicalId('setvol');
+		$setVolCmd->setType('action');
+		$setVolCmd->setSubType('slider');
+		$setVolCmd->setOrder(5);
+		$setVolCmd->save();
 	}
 
 	public function addSatellite($_adrss) #called from ajax
