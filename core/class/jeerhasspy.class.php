@@ -74,7 +74,11 @@ class jeerhasspy extends eqLogic {
                         if ($minConfidence <= floatval($payload['intent']['confidence'])) {
                           $_exec = $eqLogic->exec_callback_scenario($payload);
                           //no scenario executed, if no wakeword_id should be ask answer.
-                          if (!$_exec && $payload['wakeword_id'] != null) $speakDefault = true;
+                          if (!$_exec && $payload['wakeword_id'] != null) {
+                            $speakDefault = true;
+                          } else {
+                            RhasspyUtils::playFinished($payload['site_id']);
+                          }
                         } else {
                             RhasspyUtils::logger('Minimal confidence not reached: '.$minConfidence);
                             $speakDefault = true;

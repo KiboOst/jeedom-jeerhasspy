@@ -336,6 +336,27 @@ class RhasspyUtils
 		return true;
 	}
 
+	public function playFinished($_siteId=null) #/api/mqtt/hermes/ (topic)
+	{
+		if (is_null($_siteId) || $_siteId == '') {
+			$_siteId = config::byKey('masterSiteId', 'jeerhasspy');
+		}
+		$_uri = self::getURI($_siteId);
+
+		$url = $_uri.'/api/mqtt/hermes/audioServer/'.$_siteId.'/playFinished';
+		$payload = '{"siteId":"'.$_siteId.'"}';
+
+		self::logger('jeeRhasspy:playFinished  -> '.$_siteId);
+
+		$answer = self::_request('POST', $url, $payload);
+		if ( isset($answer['error']) ) {
+			self::logger('jeeRhasspy:playFinished error -> '.$answer['error'], 'error');
+			return false;
+		}
+		return true;
+	}
+
+
 	/* * ***************************Create Jeedom object, eqlogics, commands********************************* */
 	static function create_rhasspy_intentObject()
 	{
