@@ -318,6 +318,24 @@ class RhasspyUtils
 		return true;
 	}
 
+	public function repeatTTS($_siteId=null) #/api/text-to-speech?repeat=true&siteId= (siteId)
+	{
+		if (is_null($_siteId) || $_siteId == '') {
+			$_siteId = config::byKey('masterSiteId', 'jeerhasspy');
+		}
+		$_uri = self::getURI($_siteId);
+		$url = $_uri.'/api/text-to-speech?repeat=true&siteId='.$_siteId;
+
+		self::logger('jeeRhasspy:repeatTTS  -> '.$url);
+
+		$answer = self::_request('POST', $url, $_level);
+		if ( isset($answer['error']) ) {
+			self::logger('jeeRhasspy:repeatTTS error -> '.$answer['error'], 'error');
+			return false;
+		}
+		return true;
+	}
+
 	/* * ***************************Create Jeedom object, eqlogics, commands********************************* */
 	static function create_rhasspy_intentObject()
 	{
@@ -541,6 +559,20 @@ class RhasspyUtils
 		$setVolCmd->setSubType('slider');
 		$setVolCmd->setOrder(5);
 		$setVolCmd->save();
+
+		//repeatTTS:
+		$repeatCmd = $eqLogic->getCmd(null, 'repeatTTS');
+		if (!is_object($repeatCmd)) {
+			$repeatCmd = new jeerhasspyCmd();
+			$repeatCmd->setName('repeatTTS');
+			$repeatCmd->setIsVisible(1);
+		}
+		$repeatCmd->setEqLogic_id($eqLogic->getId());
+		$repeatCmd->setLogicalId('repeatTTS');
+		$repeatCmd->setType('action');
+		$repeatCmd->setSubType('other');
+		$repeatCmd->setOrder(6);
+		$repeatCmd->save();
 	}
 
 	public function addSatellite($_adrss) #called from ajax

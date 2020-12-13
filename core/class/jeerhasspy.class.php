@@ -191,6 +191,9 @@ class jeerhasspyCmd extends cmd {
             case 'setvol':
                 $this->setVolume($options);
                 break;
+            case 'repeatTTS':
+                $this->repeatTTS($options);
+                break;
         }
     }
 
@@ -252,5 +255,14 @@ class jeerhasspyCmd extends cmd {
         RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
 
         RhasspyUtils::setVolume($options['slider'], $siteId);
+    }
+
+    public function repeatTTS($options=array())
+    {
+        $eqName = $this->getEqLogic()->getName();
+        $siteId = str_replace('TTS-', '', $eqName);
+        RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
+
+        RhasspyUtils::repeatTTS($siteId);
     }
 }
