@@ -114,12 +114,10 @@ function refreshIntentsSummary() {
 				tr += '</td>'
 
 				tr += '<td>'
-				if (intent.configuration.hasOwnProperty('callbackScenario') && intent.configuration.callbackScenario.hasOwnProperty('scenario')) {
-					tr += '<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="scenario">'
-					tr += '<option value="-1">None</option>'
-					Object.entries(_scenarios).forEach(([key, value]) => tr += '<option value="' + key + '">' + value + '</option>')
-					tr += '</select>'
-				}
+				tr += '<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="scenario">'
+				tr += '<option value="-1">None</option>'
+				Object.entries(_scenarios).forEach(([key, value]) => tr += '<option value="' + key + '">' + value + '</option>')
+				tr += '</select>'
 				tr += '</td>'
 
 				tr += '<td>'
