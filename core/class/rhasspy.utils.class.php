@@ -163,6 +163,17 @@ class RhasspyUtils
 		else return $_string;
 	}
 
+	public function sanitizeString($_string) {
+		$lang = config::byKey('defaultLang', 'jeerhasspy');
+
+		if ($lang == 'fr') {
+			$_string = preg_replace('/ -(\d+)/', ' moins $1', $_string);
+			$_string = preg_replace('/(\d+).(\d+)/', '$1 virgule $2', $_string);
+		}
+
+		return $_string;
+	}
+
 	/* Calling HTTP API functions */
 	public function textToSpeech($_options=null) #api/text-to-speech (siteId | lang)
 	{
@@ -187,6 +198,8 @@ class RhasspyUtils
 		$_text = $_options['message'];
 		if (is_null($_text)) {
 			$_text = $_siteId.', ceci est un test.';
+		} else {
+			$_text = self::sanitizeString($_text);
 		}
 
 		//language:
