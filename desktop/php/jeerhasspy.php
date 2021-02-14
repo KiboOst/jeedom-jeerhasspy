@@ -393,37 +393,37 @@
                   <div class="col-sm-4">
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagIntent"> {{#intent#}}
+                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagIntent"> #intent#
                       </div>
                     </div>
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagEntities"> {{#entities#}}
+                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagEntities"> #entities#
                       </div>
                     </div>
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagSlots"> {{#slots#}}
+                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagSlots"> #slots#
                       </div>
                     </div>
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagSiteId"> {{#siteId#}}
+                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagSiteId"> #siteId#
                       </div>
                     </div>
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagQuery"> {{#query#}}
+                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagQuery"> #query#
                       </div>
                     </div>
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagConfidence"> {{#confidence#}}
+                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagConfidence"> #confidence#
                       </div>
                     </div>
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagWakeword"> {{#wakeword#}}
+                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagWakeword"> #wakeword#
                       </div>
                     </div>
                   </div>
@@ -439,7 +439,7 @@
                     <sup><i class="fas fa-question-circle" title="{{Ajoutez ici des tags utilisateur lors de l'éxécution du scénario (#tagName#=tagValue).}}"></i></sup>
                   </label>
                   <div class="col-sm-5">
-                      <textarea class="eqLogicAttr" style="height: 30px;width: 95%;" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="user_tags" placeholder="#tagName#=tagValue"></textarea>
+                      <textarea class="form-control eqLogicAttr ta_autosize"  data-l1key="configuration" data-l2key="callbackScenario" data-l3key="user_tags" placeholder="#tagName#=tagValue"></textarea>
                   </div>
               </div>
             </div>
