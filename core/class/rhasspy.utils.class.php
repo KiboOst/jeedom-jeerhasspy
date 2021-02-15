@@ -168,7 +168,8 @@ class RhasspyUtils
 
 		if ($lang == 'fr') {
 			$_string = preg_replace('/ -(\d+)/', ' moins $1', $_string);
-			$_string = preg_replace('/([0-9]+\.[0-9]+)/', '$1 virgule $2', $_string);
+			$_string = preg_replace('/([0-9]+)\.([0-9]+)/', '$1 virgule $2', $_string);
+			$_string = preg_replace('/([0-9]+),([0-9]+)/', '$1 virgule $2', $_string);
 		}
 
 		return $_string;
