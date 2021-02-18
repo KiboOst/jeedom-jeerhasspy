@@ -21,8 +21,6 @@ require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
 require_once dirname(__FILE__) . '/rhasspy.utils.class.php';
 
 class jeerhasspy extends eqLogic {
-    public static $_widgetPossibility = array('custom' => true, 'custom::layout' => false);
-
     //rhasspy called endpoint forwarded by jeeAPI:
     public static function event() {
         RhasspyUtils::logger('__RAW__: '.file_get_contents('php://input'));
