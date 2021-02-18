@@ -19,7 +19,7 @@ class RhasspyUtils
 			$eqLogics = eqLogic::byType('jeerhasspy');
 			foreach ($eqLogics as $eqLogic) {
 				if ($eqLogic->getConfiguration('type') != 'satDevice') continue;
-				if ($eqLogic->getName() == 'TTS-'.$_siteId) $_uri = $eqLogic->getConfiguration('addr');
+				if ($eqLogic->getLogicalId() == 'TTS-'.$_siteId) $_uri = $eqLogic->getConfiguration('addr');
 			}
 		}
 		if (($_uri==None) && ($_siteId != config::byKey('masterSiteId', 'jeerhasspy'))) self::getURI(config::byKey('masterSiteId', 'jeerhasspy'));
@@ -67,7 +67,7 @@ class RhasspyUtils
 		} else {
 			$masterName = 'Rhasspy';
 		}
-		self::create_rhasspy_deviceEqlogic($masterName, 'masterDevice');
+		self::createDeviceEqlogic($masterName, 'masterDevice');
 
 		//load profiles, default language:
 		$url = $_uri.'/api/profiles';
@@ -75,7 +75,7 @@ class RhasspyUtils
 		$profiles = json_decode($profiles['result'], true);
 		config::save('defaultLang', $profiles['default_profile'], 'jeerhasspy');
 
-		self::create_rhasspy_intentObject();
+		self::createIntentObject();
 
 		//load intents:
 		$url = $_uri.'/api/intents';
@@ -88,14 +88,14 @@ class RhasspyUtils
 			array_push($intents, $intentName);
 		}
 		//create intents eqlogics:
-		self::create_rhasspy_intentEqlogics($intents, $_cleanIntents);
+		self::createIntentEqlogic($intents, $_cleanIntents);
 
 		//update satellites:
 		$eqLogics = eqLogic::byType('jeerhasspy');
 		foreach ($eqLogics as $eqLogic) {
 			if ($eqLogic->getConfiguration('type') == 'satDevice') {
-				$siteId = str_replace('TTS-', '', $eqLogic->getName());
-				self::create_rhasspy_deviceEqlogic($siteId, 'satDevice', $eqLogic->getConfiguration('addr'));
+				$siteId = str_replace('TTS-', '', $eqLogic->getLogicalId());
+				self::createDeviceEqlogic($siteId, 'satDevice', $eqLogic->getConfiguration('addr'));
 			}
 		}
 	}
@@ -168,7 +168,8 @@ class RhasspyUtils
 
 		if ($lang == 'fr') {
 			$_string = preg_replace('/ -(\d+)/', ' moins $1', $_string);
-			$_string = preg_replace('/([0-9]+\.[0-9]+)/', '$1 virgule $2', $_string);
+			$_string = preg_replace('/([0-9]+)\.([0-9]+)/', '$1 virgule $2', $_string);
+			$_string = preg_replace('/([0-9]+),([0-9]+)/', '$1 virgule $2', $_string);
 		}
 
 		return $_string;
@@ -311,13 +312,14 @@ class RhasspyUtils
 		return true;
 	}
 
-	public function setVolume($_level=1, $_siteId=null) #/api/set-volume (siteId | level)
+	public function setVolume($_level=100, $_siteId=null) #/api/set-volume (siteId | level)
 	{
 		if (is_null($_siteId) || $_siteId == '') {
 			$_siteId = config::byKey('masterSiteId', 'jeerhasspy');
 		}
-		if ($_level > 1) $_level = 1;
+		if ($_level > 100) $_level = 100;
 		if ($_level < 0) $_level = 0;
+		$_level = round($_level / 100, 2);
 		$_uri = self::getURI($_siteId);
 		$url = $_uri.'/api/set-volume?siteId='.$_siteId;
 
@@ -328,6 +330,9 @@ class RhasspyUtils
 			self::logger('jeeRhasspy:setVolume error -> '.$answer['error'], 'error');
 			return false;
 		}
+		$eqLogic = eqLogic::byLogicalId('TTS-'.$_siteId, 'jeerhasspy');
+		$cmd = $eqLogic->getCmd(null, 'volume');
+		if (is_object($cmd)) $cmd->event($_level * 100);
 		return true;
 	}
 
@@ -371,31 +376,34 @@ class RhasspyUtils
 
 
 	/* * ***************************Create Jeedom object, eqlogics, commands********************************* */
-	static function create_rhasspy_intentObject()
+	static function createIntentObject()
 	{
-		$obj = jeeObject::byName('Rhasspy-Intents');
+		$obj = jeeObject::byId(config::byKey('intentObjectId', 'jeerhasspy'));
+		if (!is_object($obj)) {
+			$obj = jeeObject::byName('Rhasspy-Intents');
+		}
 		if (!is_object($obj)) {
 			$obj = new jeeObject();
 			$obj->setName('Rhasspy-Intents');
 			$obj->setIsVisible(0);
 			$obj->setDisplay('icon', '<i class="fas fa-microphone"></i>');
 			$obj->save();
-			RhasspyUtils::logger('Created object: Rhasspy-Intents');
 		}
+		config::save('intentObjectId', $obj->getId(), 'jeerhasspy');
+		RhasspyUtils::logger('Created object: Rhasspy-Intents');
 	}
 
-	static function get_rhasspy_intentObject()
+	static function getIntentObject()
 	{
-		$obj = jeeObject::byName('Rhasspy-Intents');
+		$obj = jeeObject::byId(config::byKey('intentObjectId', 'jeerhasspy'));
 		if (!is_object($obj)) {
-			self::create_rhasspy_intentObject();
-			$obj = jeeObject::byName('Rhasspy-Intents');
+			self::createIntentObject();
+			$obj = jeeObject::byId(config::byKey('intentObjectId', 'jeerhasspy'));
 		}
-		$objId = $obj->getId();
-		return $objId;
+		return $obj;
 	}
 
-	public function create_rhasspy_intentEqlogics($_intentsNames='', $_cleanIntents="0")
+	public function createIntentEqlogic($_intentsNames='', $_cleanIntents="0")
 	{
 		self::logger(json_encode($_intentsNames));
 		$filterIntents = config::byKey('filterJeedomIntents', 'jeerhasspy');
@@ -416,7 +424,7 @@ class RhasspyUtils
 		  }
 		}
 
-		$_parentObjectId = self::get_rhasspy_intentObject();
+		$_parentObjectId = self::getIntentObject()->getId();
 		foreach($_intentsNames as $intentName) {
 			//filter jeedom intent ?
 			if ($filterIntents == '1') {
@@ -435,20 +443,20 @@ class RhasspyUtils
 				$eqLogic->setIsEnable(1);
 				$eqLogic->setObject_id($_parentObjectId);
 				$eqLogic->setConfiguration('type', 'intent');
-				$eqLogic->save();
 			} elseif ($eqLogic->getObject_id() != $_parentObjectId) {
 				$eqLogic->setObject_id($_parentObjectId);
-				$eqLogic->save();
 			}
+			$eqLogic->setIsVisible(0);
+			$eqLogic->save();
 		}
 	}
 
-	public function create_rhasspy_deviceEqlogic($_deviceName='', $_type='masterDevice',  $_fullUrl=null)
+	public function createDeviceEqlogic($_deviceName='', $_type='masterDevice',  $_fullUrl=null)
 	{
 		self::logger($_deviceName.' | '.$_type.' | '.$_fullUrl);
 		if ($_deviceName == '') return false;
 
-		$_parentObjectId = self::get_rhasspy_intentObject();
+		$_parentObjectId = self::getIntentObject()->getId();
 
 		if ($_type == 'masterDevice') {
 			$eqLogics = eqLogic::byType('jeerhasspy');
@@ -459,21 +467,21 @@ class RhasspyUtils
 			}
 			//only one master:
 			if ($eqMaster) {
-				$eqMaster->setObject_id($_parentObjectId);
+				$eqMaster->setLogicalId('TTS-'.$_deviceName);
+				if (substr($eqMaster->getName(), 0, 4 ) === 'TTS-') {
+					$eqMaster->setName('TTS-'.$_deviceName);
+				}
+			} else {
+				$eqMaster = new jeerhasspy();
+				$eqMaster->setEqType_name('jeerhasspy');
 				$eqMaster->setLogicalId('TTS-'.$_deviceName);
 				$eqMaster->setName('TTS-'.$_deviceName);
-				$eqMaster->save();
-			} else {
-				$eqLogic = new jeerhasspy();
-				$eqLogic->setEqType_name('jeerhasspy');
-				$eqLogic->setLogicalId('TTS-'.$_deviceName);
-				$eqLogic->setName('TTS-'.$_deviceName);
-				$eqLogic->setIsVisible(0);
-				$eqLogic->setIsEnable(1);
-				$eqLogic->setObject_id($_parentObjectId);
-				$eqLogic->setConfiguration('type', $_type);
-				$eqLogic->save();
+				$eqMaster->setIsVisible(1 );
+				$eqMaster->setIsEnable(1);
+				$eqMaster->setObject_id($_parentObjectId);
 			}
+			$eqMaster->setConfiguration('type', $_type);
+			$eqMaster->save();
 			config::save('masterSiteId', $_deviceName, 'jeerhasspy');
 		}
 
@@ -484,10 +492,10 @@ class RhasspyUtils
 				$eqLogic->setEqType_name('jeerhasspy');
 				$eqLogic->setLogicalId('TTS-'.$_deviceName);
 				$eqLogic->setName('TTS-'.$_deviceName);
+				$eqLogic->setIsVisible(1);
+				$eqLogic->setIsEnable(1);
+				$eqLogic->setObject_id($_parentObjectId);
 			}
-			$eqLogic->setIsVisible(0);
-			$eqLogic->setIsEnable(1);
-			$eqLogic->setObject_id($_parentObjectId);
 			$eqLogic->setConfiguration('type', $_type);
 			$eqLogic->setConfiguration('addr', $_fullUrl);
 			$eqLogic->save();
@@ -502,6 +510,7 @@ class RhasspyUtils
 			$speakCmd = new jeerhasspyCmd();
 			$speakCmd->setName('dynamic Speak');
 			$speakCmd->setIsVisible(1);
+			$speakCmd->setOrder(0);
 		}
 		if ($_type == 'satDevice') {
 			$speakCmd->setDisplay('title_disable', 1);
@@ -513,7 +522,7 @@ class RhasspyUtils
 		$speakCmd->setLogicalId('dynspeak');
 		$speakCmd->setType('action');
 		$speakCmd->setSubType('message');
-		$speakCmd->setOrder(0);
+		$speakCmd->setIsVisible(0);
 		$speakCmd->save();
 
 		//speak cmd:
@@ -522,6 +531,7 @@ class RhasspyUtils
 			$speakCmd = new jeerhasspyCmd();
 			$speakCmd->setName('Speak');
 			$speakCmd->setIsVisible(1);
+			$speakCmd->setOrder(1);
 		}
 		if ($_type == 'satDevice') {
 			$speakCmd->setDisplay('title_disable', 1);
@@ -533,7 +543,6 @@ class RhasspyUtils
 		$speakCmd->setLogicalId('speak');
 		$speakCmd->setType('action');
 		$speakCmd->setSubType('message');
-		$speakCmd->setOrder(1);
 		$speakCmd->save();
 
 		//ask cmd:
@@ -542,6 +551,7 @@ class RhasspyUtils
 			$askCmd = new jeerhasspyCmd();
 			$askCmd->setName('Ask');
 			$askCmd->setIsVisible(1);
+			$askCmd->setOrder(2);
 		}
 		$askCmd->setEqLogic_id($eqLogic->getId());
 		$askCmd->setLogicalId('ask');
@@ -549,7 +559,7 @@ class RhasspyUtils
 		$askCmd->setSubType('message');
 		$askCmd->setDisplay('title_placeholder', 'Intent');
 		$askCmd->setDisplay('message_placeholder', 'Question');
-		$askCmd->setOrder(2);
+		$askCmd->setIsVisible(0);
 		$askCmd->save();
 
 		//LEDs on:
@@ -558,12 +568,12 @@ class RhasspyUtils
 			$ledOnCmd = new jeerhasspyCmd();
 			$ledOnCmd->setName('ledOn');
 			$ledOnCmd->setIsVisible(1);
+			$ledOnCmd->setOrder(3);
 		}
 		$ledOnCmd->setEqLogic_id($eqLogic->getId());
 		$ledOnCmd->setLogicalId('ledOn');
 		$ledOnCmd->setType('action');
 		$ledOnCmd->setSubType('other');
-		$ledOnCmd->setOrder(3);
 		$ledOnCmd->save();
 
 		//LEDs off:
@@ -572,13 +582,32 @@ class RhasspyUtils
 			$ledOffCmd = new jeerhasspyCmd();
 			$ledOffCmd->setName('ledOff');
 			$ledOffCmd->setIsVisible(1);
+			$ledOffCmd->setOrder(4);
 		}
 		$ledOffCmd->setEqLogic_id($eqLogic->getId());
 		$ledOffCmd->setLogicalId('ledOff');
 		$ledOffCmd->setType('action');
 		$ledOffCmd->setSubType('other');
-		$ledOffCmd->setOrder(4);
 		$ledOffCmd->save();
+
+		//Volume info
+		$volCmd = $eqLogic->getCmd(null, 'volume');
+		if (!is_object($volCmd)) {
+			$volCmd = new jeerhasspyCmd();
+			$volCmd->setName('volume');
+			$volCmd->setIsVisible(1);
+			$volCmd->setIsHistorized(0);
+			$volCmd->setTemplate('dashboard', 'core::horizontal');
+			$volCmd->setTemplate('mobile', 'core::horizontal');
+			$volCmd->setOrder(6);
+		}
+		$volCmd->setEqLogic_id($eqLogic->getId());
+		$volCmd->setLogicalId('volume');
+		$volCmd->setType('info');
+		$volCmd->setSubType('numeric');
+		$volCmd->setConfiguration('minValue', 0);
+        $volCmd->setConfiguration('maxValue', 100);
+		$volCmd->save();
 
 		//setVolume:
 		$setVolCmd = $eqLogic->getCmd(null, 'setvol');
@@ -586,12 +615,15 @@ class RhasspyUtils
 			$setVolCmd = new jeerhasspyCmd();
 			$setVolCmd->setName('setVolume');
 			$setVolCmd->setIsVisible(1);
+			$setVolCmd->setOrder(5);
 		}
 		$setVolCmd->setEqLogic_id($eqLogic->getId());
 		$setVolCmd->setLogicalId('setvol');
 		$setVolCmd->setType('action');
 		$setVolCmd->setSubType('slider');
-		$setVolCmd->setOrder(5);
+		$setVolCmd->setConfiguration('minValue', 0);
+        $setVolCmd->setConfiguration('maxValue', 100);
+        $setVolCmd->setConfiguration('infoId', $volCmd->getId());
 		$setVolCmd->save();
 
 		//repeatTTS:
@@ -600,12 +632,12 @@ class RhasspyUtils
 			$repeatCmd = new jeerhasspyCmd();
 			$repeatCmd->setName('repeatTTS');
 			$repeatCmd->setIsVisible(1);
+			$repeatCmd->setOrder(7);
 		}
 		$repeatCmd->setEqLogic_id($eqLogic->getId());
 		$repeatCmd->setLogicalId('repeatTTS');
 		$repeatCmd->setType('action');
 		$repeatCmd->setSubType('other');
-		$repeatCmd->setOrder(6);
 		$repeatCmd->save();
 	}
 
@@ -638,7 +670,7 @@ class RhasspyUtils
 			return $answer;
 		}
 
-		self::create_rhasspy_deviceEqlogic($_siteId, 'satDevice', $_adrss);
+		self::createDeviceEqlogic($_siteId, 'satDevice', $_adrss);
 	}
 
 	/* * **********************************Modify Rhasspy user profile**************************************** */

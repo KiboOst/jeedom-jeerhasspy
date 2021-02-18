@@ -210,7 +210,7 @@
               <?php
                 foreach ($eqLogics as $eqLogic) {
                   if ($eqLogic->getConfiguration('type') != 'masterDevice') continue;
-                  $siteId = str_replace('TTS-', '', $eqLogic->getName());
+                  $siteId = str_replace('TTS-', '', $eqLogic->getLogicalId());
                   $icon = '<i class="fas fa-microphone" style="font-size: 36px;"></i><br>Master<br>';
                   $siteUrl = $_rhasspyUrl;
 

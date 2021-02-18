@@ -175,7 +175,7 @@ class jeerhasspyCmd extends cmd {
     public function execute($options = array())
     {
         $eqlogic = $this->getEqLogic();
-        RhasspyUtils::logger($eqlogic->getName().'.'.$this->getLogicalId().'() | '.json_encode($options));
+        RhasspyUtils::logger($eqlogic->getLogicalId().'.'.$this->getLogicalId().'() | '.json_encode($options));
         switch ($this->getLogicalId()) {
             case 'speak':
                 $this->speak($options);
@@ -203,7 +203,7 @@ class jeerhasspyCmd extends cmd {
 
     public function speak($options=array())
     {
-        $eqName = $this->getEqLogic()->getName();
+        $eqName = $this->getEqLogic()->getLogicalId();
         $siteId = str_replace('TTS-', '', $eqName);
         RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
         if ($options['title'] == '') {
@@ -216,7 +216,7 @@ class jeerhasspyCmd extends cmd {
 
     public function dynamicSpeak($options=array())
     {
-        $eqName = $this->getEqLogic()->getName();
+        $eqName = $this->getEqLogic()->getLogicalId();
         $siteId = str_replace('TTS-', '', $eqName);
         RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
         if ($options['title'] == '') {
@@ -230,7 +230,7 @@ class jeerhasspyCmd extends cmd {
 
     public function ask($options=array())
     {
-        $eqName = $this->getEqLogic()->getName();
+        $eqName = $this->getEqLogic()->getLogicalId();
         $siteId = str_replace('TTS-', '', $eqName);
         RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
 
@@ -245,7 +245,7 @@ class jeerhasspyCmd extends cmd {
 
     public function setLEDs($state=1)
     {
-        $eqName = $this->getEqLogic()->getName();
+        $eqName = $this->getEqLogic()->getLogicalId();
         $siteId = str_replace('TTS-', '', $eqName);
         RhasspyUtils::logger($state.' siteId: '.$siteId);
 
@@ -254,7 +254,7 @@ class jeerhasspyCmd extends cmd {
 
     public function setVolume($options=array())
     {
-        $eqName = $this->getEqLogic()->getName();
+        $eqName = $this->getEqLogic()->getLogicalId();
         $siteId = str_replace('TTS-', '', $eqName);
         RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
 
@@ -263,7 +263,7 @@ class jeerhasspyCmd extends cmd {
 
     public function repeatTTS($options=array())
     {
-        $eqName = $this->getEqLogic()->getName();
+        $eqName = $this->getEqLogic()->getLogicalId();
         $siteId = str_replace('TTS-', '', $eqName);
         RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
 
