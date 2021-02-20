@@ -17,53 +17,55 @@
   sendVarToJS('Core_noEqContextMenu', 1);
 
   //get intents groups for panels and autocomplete:
+  $rhasspyIntents = jeerhasspy_intent::all();
   $intentGroups = array();
   $intents = array();
   $intents['None'] = array();
   array_push($intentGroups, 'None');
 
-  foreach ($eqLogics as $eqLogic) {
-    if ($eqLogic->getConfiguration('type') != 'intent') continue;
-    $group = $eqLogic->getConfiguration('group');
+  foreach ($rhasspyIntents as $rhasspyIntent) {
+    $group = $rhasspyIntent->getConfiguration('group');
     $intents[$group] = array();
     array_push($intentGroups, $group);
   }
   $intentGroups = array_unique($intentGroups);
   sendVarToJS('intentGroups', $intentGroups);
 
-  foreach ($eqLogics as $eqLogic) {
-    if ($eqLogic->getConfiguration('type') != 'intent') continue;
-    $group = $eqLogic->getConfiguration('group');
+  foreach ($rhasspyIntents as $rhasspyIntent) {
+    $group = $rhasspyIntent->getConfiguration('group');
     if ($group == null) $group = 'None';
-    array_push($intents[$group], $eqLogic);
+    array_push($intents[$group], $rhasspyIntent);
   }
-
   $scenarios = scenario::all();
 
   $_rhasspyUrl = config::byKey('rhasspyAddr', 'jeerhasspy').':'.config::byKey('rhasspyPort', 'jeerhasspy');
   $_internalURL = network::getNetworkAccess('internal') . '/core/api/jeeApi.php?plugin=jeerhasspy&apikey=' . jeedom::getApiKey($plugin->getId()) . '&plugin=jeerhasspy&type=jeerhasspy';
   $_externalURL = network::getNetworkAccess('external') . '/core/api/jeeApi.php?plugin=jeerhasspy&apikey=' . jeedom::getApiKey($plugin->getId()) . '&plugin=jeerhasspy&type=jeerhasspy';
 
-  function getIntentDisplayCard($intent, $plugin) {
-    $opacity = ($intent->getIsEnable()) ? '' : 'disableCard';
+  //load all intents data:
+  $dataIntents = jeedom::toHumanReadable(utils::o2a($rhasspyIntents));
+  sendVarToJS('dataIntents', $dataIntents);
+
+  function getIntentDisplayCard($_intent, $_plugin) {
+    $opacity = ($_intent->getIsEnable()) ? '' : 'disableCard';
     $_div = '';
-    $_div .= '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $intent->getId() . '">';
+    $_div .= '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $_intent->getId() . '">';
     //callback scenario name tooltip:
-    $_confScenario = $intent->getConfiguration('callbackScenario');
+    $_confScenario = $_intent->getScenario();
     $_confScenarioName = false;
-    if (isset($_confScenario['scenario'])) {
-      $scenario = scenario::byId($_confScenario['scenario']);
+    if (isset($_confScenario['id'])) {
+      $scenario = scenario::byId($_confScenario['id']);
       if ($scenario) {
         $title = ' title="';
         $_confScenarioName = $scenario->getHumanName().' -> '.$_confScenario['action'];
         $_tags = array();
-        if ($_confScenario['isTagIntent'] == '1') array_push($_tags, 'Intent');
-        if ($_confScenario['isTagEntities'] == '1') array_push($_tags, 'Entities');
-        if ($_confScenario['isTagSlots'] == '1') array_push($_tags, 'Slots');
-        if ($_confScenario['isTagSiteId'] == '1') array_push($_tags, 'SiteId');
-        if ($_confScenario['isTagQuery'] == '1') array_push($_tags, 'Query');
-        if ($_confScenario['isTagConfidence'] == '1') array_push($_tags, 'Confidence');
-        if ($_confScenario['isTagWakeword'] == '1') array_push($_tags, 'Wakeword');
+        if ($_intent->getTags('intent') == '1') array_push($_tags, 'Intent');
+        if ($_intent->getTags('entities') == '1') array_push($_tags, 'Entities');
+        if ($_intent->getTags('slots') == '1') array_push($_tags, 'Slots');
+        if ($_intent->getTags('siteid') == '1') array_push($_tags, 'SiteId');
+        if ($_intent->getTags('query') == '1') array_push($_tags, 'Query');
+        if ($_intent->getTags('confidence') == '1') array_push($_tags, 'Confidence');
+        if ($_intent->getTags('wakeword') == '1') array_push($_tags, 'Wakeword');
         if (count($_tags) > 0) {
           $_confScenarioName .= '<br>';
           $_confScenarioName .= implode(' | ', $_tags);
@@ -72,7 +74,7 @@
       }
     }
 
-    $_div .= '<img src="' . $plugin->getPathImgIcon() . '"/>';
+    $_div .= '<img src="' . $_plugin->getPathImgIcon() . '"/>';
 
     $_div .= '<span class="name">';
 
@@ -83,7 +85,7 @@
     }
 
 
-    $_div .= $intent->getName(true, true).'</span>';
+    $_div .= $_intent->getName().'</span>';
 
     $_div .= '</div>';
     return $_div;
@@ -303,11 +305,12 @@
       </div>
     </div>
 
-    <div class="col-xs-12 eqLogic" style="display: none;">
+    <!-- Intent page -->
+    <div id="intentPage" class="col-xs-12 eqLogic" style="display: none;">
       <div class="input-group pull-right" style="display:inline-flex">
         <span class="input-group-btn">
-          <a class="btn btn-sm btn-success eqLogicAction roundedLeft" data-action="save"><i class="fas fa-check-circle"></i> {{Sauvegarder}}
-          </a><a class="btn btn-danger btn-sm eqLogicAction roundedRight" data-action="remove"><i class="fas fa-minus-circle"></i> {{Supprimer}}</a>
+          <a id="bt_intentSave" class="btn btn-sm btn-success eqLogicAction roundedLeft"><i class="fas fa-check-circle"></i> {{Sauvegarder}}
+          </a><a id="bt_intentRemove" class="btn btn-danger btn-sm eqLogicAction roundedRight"><i class="fas fa-minus-circle"></i> {{Supprimer}}</a>
         </span>
       </div>
 
@@ -327,18 +330,18 @@
               <div class="form-group">
                   <label class="col-sm-2 control-label">{{Nom}}</label>
                   <div class="col-sm-3">
-                      <input type="text" class="eqLogicAttr form-control" id="intentId" data-l1key="id" style="display : none;" />
-                      <input type="text" class="eqLogicAttr form-control" id="intentName" data-l1key="name"  readonly/>
+                      <input type="text" class="intentAttr form-control" id="intentId" data-l1key="id" style="display:none;" />
+                      <input type="text" class="intentAttr form-control" id="intentName" data-l1key="name"  readonly/>
                   </div>
                   <div class="col-sm-3">
-                    <label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isEnable" checked/>{{Activer}}</label>
+                    <label class="checkbox-inline"><input type="checkbox" class="intentAttr" data-l1key="isEnable" checked/>{{Activer}}</label>
                   </div>
               </div>
 
               <div class="form-group">
                 <label class="col-sm-2 control-label" >{{Groupe}}</label>
                 <div class="col-sm-3">
-                  <input class="form-control eqLogicAttr" data-l1key="configuration" data-l2key="group" type="text" placeholder="{{Groupe de l'Intention}}"/>
+                  <input class="form-control intentAttr" data-l1key="configuration" data-l2key="group" type="text" placeholder="{{Groupe de l'Intention}}"/>
                 </div>
               </div>
 
@@ -347,7 +350,7 @@
                   <sup><i class="fas fa-question-circle" title="{{Utilise le moteur d'interaction de Jeedom au lieu d'un scénario.}}"></i></sup>
                 </label>
                 <div class="col-sm-3">
-                  <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="isInteract"/>
+                  <input type="checkbox" class="intentAttr" data-l1key="isInteract"/>
                 </div>
               </div>
             </div>
@@ -357,7 +360,7 @@
               <div class="form-group">
                   <label class="col-sm-2 control-label">{{Scenario}}</label>
                   <div class="col-sm-4">
-                      <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="scenario">
+                      <select class="intentAttr form-control" data-l1key="scenario" data-l2key="id">
                           <option value="-1">{{None}}</option>
                           <?php
                           foreach ($scenarios as $scenario) {
@@ -369,7 +372,7 @@
 
                   <label class="col-sm-1 control-label">{{Action}}</label>
                   <div class="col-sm-2">
-                      <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="action">
+                      <select class="intentAttr form-control" data-l1key="scenario" data-l2key="action">
                           <option value="start">{{Start}}</option>
                           <option value="startsync">{{Start (sync)}}</option>
                           <option value="stop">{{Stop}}</option>
@@ -393,37 +396,37 @@
                   <div class="col-sm-4">
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagIntent"> #intent#
+                        <input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="intent"> #intent#
                       </div>
                     </div>
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagEntities"> #entities#
+                        <input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="entities"> #entities#
                       </div>
                     </div>
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagSlots"> #slots#
+                        <input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="slots"> #slots#
                       </div>
                     </div>
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagSiteId"> #siteId#
+                        <input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="siteid"> #siteId#
                       </div>
                     </div>
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagQuery"> #query#
+                        <input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="query"> #query#
                       </div>
                     </div>
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagConfidence"> #confidence#
+                        <input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="confidence"> #confidence#
                       </div>
                     </div>
                     <div class="col-sm-12">
                       <div class="callbackScenarioTags">
-                        <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagWakeword"> #wakeword#
+                        <input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="wakeword"> #wakeword#
                       </div>
                     </div>
                   </div>
@@ -432,14 +435,14 @@
                     <sup><i class="fas fa-question-circle" title="{{Confidence minimale pour éxécuter le scénario.}}"></i></sup>
                   </label>
                   <div class="col-sm-5" style="margin-bottom: 4px;">
-                      <input type="number" value="0" min="0" max="1" step="0.1" class="eqLogicAttr input-sm" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="minConfidence" />
+                      <input type="number" value="0" min="0" max="1" step="0.1" class="intentAttr input-sm" data-l1key="scenario" data-l2key="minConfidence" />
                   </div>
 
                   <label class="col-sm-1 control-label">{{Tags}}
                     <sup><i class="fas fa-question-circle" title="{{Ajoutez ici des tags utilisateur lors de l'éxécution du scénario (#tagName#=tagValue).}}"></i></sup>
                   </label>
                   <div class="col-sm-5">
-                      <textarea class="form-control eqLogicAttr ta_autosize"  data-l1key="configuration" data-l2key="callbackScenario" data-l3key="user_tags" placeholder="#tagName#=tagValue"></textarea>
+                      <textarea class="form-control intentAttr ta_autosize"  data-l1key="tags" data-l2key="user" placeholder="#tagName#=tagValue"></textarea>
                   </div>
               </div>
             </div>

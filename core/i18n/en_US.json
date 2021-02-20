@@ -2,7 +2,8 @@
     "plugins\/jeerhasspy\/core\/ajax\/jeerhasspy.ajax.php": {
         "401 - Accès non autorisé": "401 - Unauthorized access",
         "Aucune méthode correspondante à : ": "No method corresponding to: ",
-        "Désolé, ce satellite est introuvable.": "Sorry, can't find this satellite."
+        "Désolé, ce satellite est introuvable.": "Sorry, can't find this satellite.",
+        "Intention introuvable": "Unfound Intent"
     },
     "plugins\/jeerhasspy\/desktop\/js\/jeerhasspy.js": {
         "Importation de l\\'assistant": "Assistant import",
@@ -19,7 +20,10 @@
         "Suppression réussie, veuillez recharger la page (F5).": "Successful deletion, please reload the page (F5).",
         "Suppression du satellite réussie.": "Satellite deletion successful.",
         "Satellite ajouté, veuillez recharger la page (F5).": "Satellite added, please reload the page (F5).",
-        "Configuration de votre Rhasspy réussie.": "Configuration of your Rhasspy successful."
+        "Configuration de votre Rhasspy réussie.": "Configuration of your Rhasspy successful.",
+        "Intention supprimée: ": "Intent deleted: ",
+        "Intention sauvegardée: ": "Intent saved: ",
+        "Êtes-vous sûr de vouloir supprimer cette intention ?": "Are you sure you want to delete this intention ?"
     },
     "plugins\/jeerhasspy\/desktop\/modal\/intents.summary.php": {
         "401 - Accès non autorisé": "401 - Unauthorized access",

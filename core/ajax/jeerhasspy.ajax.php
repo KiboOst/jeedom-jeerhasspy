@@ -82,6 +82,49 @@ try {
 		ajax::success($result);
 	}
 
+	if (init('action') == 'byId') {
+		ajax::success(jeedom::toHumanReadable(utils::o2a(jeerhasspy_intent::byId(init('intentId')))));
+	}
+
+	if (init('action') == 'allIntents') {
+		ajax::success(jeedom::toHumanReadable(utils::o2a(jeerhasspy_intent::all())));
+	}
+
+	if (init('action') == 'saveAllIntents') {
+		$intents = json_decode(init('intentsValues'), true);
+		foreach ($intents as $intent_json) {
+			$intent = jeerhasspy_intent::byId($intent_json['id']);
+			if (is_object($intent)) {
+				utils::a2o($intent, jeedom::fromHumanReadable($intent_json));
+				$intent->save();
+			}
+		}
+		ajax::success();
+	}
+
+	if (init('action') == 'saveIntent') {
+		$intentValues = json_decode(init('intentValues'), true);
+		if (isset($intentValues['id'])) {
+			$intent = jeerhasspy_intent::byId($intentValues['id']);
+			if (!is_object($intent)) {
+				ajax::error(__('Intention introuvable', __FILE__));
+			}
+			utils::a2o($intent, jeedom::fromHumanReadable($intentValues));
+			$intent->save();
+			ajax::success($intent->getName());
+		}
+		ajax::error(__('No id provided', __FILE__));
+	}
+
+	if (init('action') == 'remove') {
+		$intent = jeerhasspy_intent::byId(init('intentId'));
+		if (is_object($intent)) {
+			$intentName = $intent->getName();
+			$intent->remove();
+			ajax::success($intentName);
+		}
+	}
+
 	throw new Exception(__('Aucune méthode correspondante à : ', __FILE__) . init('action'));
 	/*     * *********Catch exeption*************** */
 } catch (Exception $e) {

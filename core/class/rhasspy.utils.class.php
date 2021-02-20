@@ -67,15 +67,13 @@ class RhasspyUtils
 		} else {
 			$masterName = 'Rhasspy';
 		}
-		self::createDeviceEqlogic($masterName, 'masterDevice');
+		self::createDevice($masterName, 'masterDevice');
 
 		//load profiles, default language:
 		$url = $_uri.'/api/profiles';
 		$profiles = self::_request('GET', $url);
 		$profiles = json_decode($profiles['result'], true);
 		config::save('defaultLang', $profiles['default_profile'], 'jeerhasspy');
-
-		self::createIntentObject();
 
 		//load intents:
 		$url = $_uri.'/api/intents';
@@ -88,24 +86,23 @@ class RhasspyUtils
 			array_push($intents, $intentName);
 		}
 		//create intents eqlogics:
-		self::createIntentEqlogic($intents, $_cleanIntents);
+		self::createIntents($intents, $_cleanIntents);
 
 		//update satellites:
 		$eqLogics = eqLogic::byType('jeerhasspy');
 		foreach ($eqLogics as $eqLogic) {
 			if ($eqLogic->getConfiguration('type') == 'satDevice') {
 				$siteId = str_replace('TTS-', '', $eqLogic->getLogicalId());
-				self::createDeviceEqlogic($siteId, 'satDevice', $eqLogic->getConfiguration('addr'));
+				self::createDevice($siteId, 'satDevice', $eqLogic->getConfiguration('addr'));
 			}
 		}
 	}
 
 	public function deleteIntents()
 	{
-		$eqLogics = eqLogic::byType('jeerhasspy');
-		foreach ($eqLogics as $eqLogic) {
-			if ($eqLogic->getConfiguration('type') != 'intent') continue;
-			$eqLogic->remove();
+		$intents = jeerhasspy_intent::all();
+		foreach ($intents as $intent) {
+			$intent->remove();
 		}
 	}
 
@@ -376,34 +373,7 @@ class RhasspyUtils
 
 
 	/* * ***************************Create Jeedom object, eqlogics, commands********************************* */
-	static function createIntentObject()
-	{
-		$obj = jeeObject::byId(config::byKey('intentObjectId', 'jeerhasspy'));
-		if (!is_object($obj)) {
-			$obj = jeeObject::byName('Rhasspy-Intents');
-		}
-		if (!is_object($obj)) {
-			$obj = new jeeObject();
-			$obj->setName('Rhasspy-Intents');
-			$obj->setIsVisible(0);
-			$obj->setDisplay('icon', '<i class="fas fa-microphone"></i>');
-			$obj->save();
-		}
-		config::save('intentObjectId', $obj->getId(), 'jeerhasspy');
-		RhasspyUtils::logger('Created object: Rhasspy-Intents');
-	}
-
-	static function getIntentObject()
-	{
-		$obj = jeeObject::byId(config::byKey('intentObjectId', 'jeerhasspy'));
-		if (!is_object($obj)) {
-			self::createIntentObject();
-			$obj = jeeObject::byId(config::byKey('intentObjectId', 'jeerhasspy'));
-		}
-		return $obj;
-	}
-
-	public function createIntentEqlogic($_intentsNames='', $_cleanIntents="0")
+	public function createIntents($_intentsNames='', $_cleanIntents="0")
 	{
 		self::logger(json_encode($_intentsNames));
 		$filterIntents = config::byKey('filterJeedomIntents', 'jeerhasspy');
@@ -414,49 +384,36 @@ class RhasspyUtils
 
 		if ($_cleanIntents == "1") {
 		  self::logger('cleaning intents');
-		  $eqLogics = eqLogic::byType('jeerhasspy');
-		  foreach($eqLogics as $eqLogic) {
-			if ($eqLogic->getConfiguration('type') != 'intent') continue;
-			$name = $eqLogic->getLogicalId();
-			if (!in_array($name, $_intentsNames)) {
-			  $eqLogic->remove();
+
+		  $intents = jeerhasspy_intent::all();
+		  foreach($intents as $intent) {
+		  	if (!in_array($intent->getName(), $_intentsNames)) {
+			  $intent->remove();
 			}
 		  }
 		}
 
-		$_parentObjectId = self::getIntentObject()->getId();
 		foreach($_intentsNames as $intentName) {
 			//filter jeedom intent ?
 			if ($filterIntents == '1') {
 				if (substr(strtolower($intentName), -6) != 'jeedom') continue;
 			}
 
-			$eqLogic = eqLogic::byLogicalId($intentName, 'jeerhasspy');
-			if (!is_object($eqLogic))
-			{
-				self::logger('creating eqlogic '.$intentName);
-				$eqLogic = new jeerhasspy();
-				$eqLogic->setEqType_name('jeerhasspy');
-				$eqLogic->setLogicalId($intentName);
-				$eqLogic->setName($intentName);
-				$eqLogic->setIsVisible(0);
-				$eqLogic->setIsEnable(1);
-				$eqLogic->setObject_id($_parentObjectId);
-				$eqLogic->setConfiguration('type', 'intent');
-			} elseif ($eqLogic->getObject_id() != $_parentObjectId) {
-				$eqLogic->setObject_id($_parentObjectId);
+			$intent = jeerhasspy_intent::byName($intentName);
+			if (!is_object($intent)) {
+				self::logger('creating intent '.$intentName);
+				$intent = new jeerhasspy_intent();
+				$intent->setName($intentName);
+				$intent->setIsEnable(1);
+				$intent->save();
 			}
-			$eqLogic->setIsVisible(0);
-			$eqLogic->save();
 		}
 	}
 
-	public function createDeviceEqlogic($_deviceName='', $_type='masterDevice',  $_fullUrl=null)
+	public function createDevice($_deviceName='', $_type='masterDevice',  $_fullUrl=null)
 	{
 		self::logger($_deviceName.' | '.$_type.' | '.$_fullUrl);
 		if ($_deviceName == '') return false;
-
-		$_parentObjectId = self::getIntentObject()->getId();
 
 		if ($_type == 'masterDevice') {
 			$eqLogics = eqLogic::byType('jeerhasspy');
@@ -478,7 +435,7 @@ class RhasspyUtils
 				$eqMaster->setName('TTS-'.$_deviceName);
 				$eqMaster->setIsVisible(1 );
 				$eqMaster->setIsEnable(1);
-				$eqMaster->setObject_id($_parentObjectId);
+				$eqMaster->setObject_id(-1);
 			}
 			$eqMaster->setConfiguration('type', $_type);
 			$eqMaster->save();
@@ -494,7 +451,7 @@ class RhasspyUtils
 				$eqLogic->setName('TTS-'.$_deviceName);
 				$eqLogic->setIsVisible(1);
 				$eqLogic->setIsEnable(1);
-				$eqLogic->setObject_id($_parentObjectId);
+				$eqLogic->setObject_id(-1);
 			}
 			$eqLogic->setConfiguration('type', $_type);
 			$eqLogic->setConfiguration('addr', $_fullUrl);
@@ -670,7 +627,7 @@ class RhasspyUtils
 			return $answer;
 		}
 
-		self::createDeviceEqlogic($_siteId, 'satDevice', $_adrss);
+		self::createDevice($_siteId, 'satDevice', $_adrss);
 	}
 
 	/* * **********************************Modify Rhasspy user profile**************************************** */

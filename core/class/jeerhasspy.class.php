@@ -19,11 +19,12 @@
 /* * ***************************Includes********************************* */
 require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
 require_once dirname(__FILE__) . '/rhasspy.utils.class.php';
+require_once dirname(__FILE__) . '/jeerhasspy_intent.class.php';
 
 class jeerhasspy extends eqLogic {
     //rhasspy called endpoint forwarded by jeeAPI:
     public static function event() {
-        RhasspyUtils::logger('__RAW__: '.file_get_contents('php://input'));
+        RhasspyUtils::logger('__EVENT__: '.file_get_contents('php://input'));
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $payload = json_decode(file_get_contents('php://input'), true);
 
@@ -49,11 +50,10 @@ class jeerhasspy extends eqLogic {
                 if ($intentName != '') {
                     RhasspyUtils::logger('Intent Recognized: '.json_encode($payload));
 
-                    $eqLogic = eqLogic::byLogicalId($intentName, 'jeerhasspy');
-                    if (is_object($eqLogic) && $eqLogic->getIsEnable() == 1) {
-
+                    $jrIntent = jeerhasspy_intent::byName($intentName);
+                    if (is_object($jrIntent) && $jrIntent->getIsEnable() == 1) {
                         //interact
-                        if ($eqLogic->getConfiguration('isInteract')) {
+                        if ($jrIntent->getIsInteract()) {
                             RhasspyUtils::logger('Send query to interact engine!');
                             $reply = interactQuery::tryToReply($payload['text']);
                             if (trim($reply['reply']) != '') {
@@ -66,11 +66,11 @@ class jeerhasspy extends eqLogic {
                         }
 
                         //callback scenario
-                        $callbackScenario = $eqLogic->getConfiguration('callbackScenario');
+                        $intentScenario = $jrIntent->getScenario();
                         $minConfidence = 0;
-                        if (isset($callbackScenario['minConfidence'])) $minConfidence = floatval($callbackScenario['minConfidence']);
+                        if (isset($intentScenario['minConfidence'])) $minConfidence = floatval($intentScenario['minConfidence']);
                         if ($minConfidence <= floatval($payload['intent']['confidence'])) {
-                          $_exec = $eqLogic->exec_callback_scenario($payload);
+                          $_exec = $jrIntent->exec_callback_scenario($payload);
                           //no scenario executed, if no wakeword_id should be ask answer.
                           if (!$_exec && $payload['wakeword_id'] != null) {
                             $speakDefault = true;
@@ -95,64 +95,6 @@ class jeerhasspy extends eqLogic {
                 return;
             }
         }
-    }
-
-    //Get intent eq scenario:
-    public function exec_callback_scenario($payload=null)
-    {
-        $callback_settings = $this->getConfiguration('callbackScenario');
-        RhasspyUtils::logger('callback_settings: '.json_encode($callback_settings));
-
-        if (!is_array($callback_settings) || $callback_settings['scenario'] == '-1') {
-            RhasspyUtils::logger('No scenario defined for this intent.');
-            return false;
-        }
-
-        $_scenarioId = $callback_settings['scenario'];
-        $_scenarioAction = $callback_settings['action'];
-
-        if (!is_object(scenario::byId($_scenarioId))) {
-            RhasspyUtils::logger('scenario: id '. $_scenarioId .' does not exist', 'error');
-            return false;
-        }
-        $options = array();
-        $options['scenario_id'] = $_scenarioId;
-        $options['action'] = $_scenarioAction;
-        $options['tags'] = $this->get_all_scenario_tags($callback_settings, $payload);
-
-        return scenarioExpression::createAndExec('action', 'scenario', $options);
-    }
-    //Set scenario tags for scenario exec:
-    public function get_all_scenario_tags($_options, $_payload)
-    {
-        RhasspyUtils::logger('__options: '.json_encode($_payload));
-        $tags = array();
-        $userTags = $_options['user_tags'];
-
-        $userTags = arg2array($_options['user_tags']);
-        foreach ($userTags as $key => $value) {
-            $tags['#' . trim(trim($key), '#') . '#'] = $value;
-        }
-
-        if ($_options['isTagIntent'] == '1') $tags['#intent#'] = $_payload['intent']['name'];
-        if ($_options['isTagConfidence'] == '1') $tags['#confidence#'] = $_payload['intent']['confidence'];
-        if ($_options['isTagWakeword'] == '1') $tags['#wakeword#'] = $_payload['wakeword_id'];
-        if ($_options['isTagQuery'] == '1') $tags['#query#'] = $_payload['text'];
-        if ($_options['isTagSiteId'] == '1') $tags['#siteId#'] = $_payload['site_id'];
-
-        if ($_options['isTagEntities'] == '1') {
-            foreach ($_payload['entities'] as $entity) {
-                $tags['#'.$entity['entity'].'#'] = $entity['value'];
-            }
-        }
-        if ($_options['isTagSlots'] == '1') {
-            foreach ($_payload['slots'] as $slot => $value) {
-                $tags['#'.$slot.'#'] = $value;
-            }
-        }
-
-        RhasspyUtils::logger('__return tags: '.json_encode($tags));
-        return $tags;
     }
 
     /*     * *********************Méthodes d'instance************************* */
