@@ -31,7 +31,7 @@ $('#input_searchEqlogic').keyup(function () {
   if (search == '') {
     $('#intentsContainer .panel-collapse.in').closest('.panel').find('.accordion-toggle').click()
     $('#intentsContainer .eqLogicDisplayCard').show()
-    $('#intentsContainer .eqLogicThumbnailContainer').packery()
+    if (coreVersion < 4.2) $('#intentsContainer .eqLogicThumbnailContainer').packery()
     return
   }
   search = normTextLower(search)
@@ -47,19 +47,19 @@ $('#input_searchEqlogic').keyup(function () {
   })
   $('#intentsContainer .panel-collapse[data-show=1]').collapse('show')
   $('#intentsContainer .panel-collapse[data-show=0]').collapse('hide')
-  $('#intentsContainer .eqLogicThumbnailContainer').packery()
+  if (coreVersion < 4.2) $('#intentsContainer .eqLogicThumbnailContainer').packery()
 })
 
 $('#bt_openAll').off('click').on('click', function () {
   $("#intentsContainer .accordion-toggle[aria-expanded='false']").each(function() {
     $(this).click()
-    $(this).closest('.panel').find('.eqLogicThumbnailContainer').packery()
+    if (coreVersion < 4.2) $(this).closest('.panel').find('.eqLogicThumbnailContainer').packery()
   })
 })
 $('#bt_closeAll').off('click').on('click', function () {
   $("#intentsContainer .accordion-toggle[aria-expanded='true']").each(function() {
     $(this).click()
-    $(this).closest('.panel').find('.eqLogicThumbnailContainer').packery()
+    if (coreVersion < 4.2) $(this).closest('.panel').find('.eqLogicThumbnailContainer').packery()
   })
 })
 $('#bt_resetSearch').off('click').on('click', function () {
@@ -78,29 +78,31 @@ $(function(){
         $('#div_alert').showAlert({message: error.message, level: 'danger'});
       },
       success: function (_eqs) {
-        if(_eqs.length == 0){
+        if (_eqs.length == 0) {
           return;
         }
         var eqsGroups = []
-        for(i=0; i<_eqs.length; i++){
+        for (i=0; i<_eqs.length; i++) {
+          if (_eqs[i].configuration.type != 'intent') continue
           group = _eqs[i].configuration.group
-          if (group == null) continue
-          if (group == "") group = 'Aucun'
+          if (group == null) group = '{{Aucun}}'
+          if (group == "") group = '{{Aucun}}'
           group = group[0].toUpperCase() + group.slice(1)
           eqsGroups.push(group)
         }
         eqsGroups = Array.from(new Set(eqsGroups))
         eqsGroups.sort()
         var eqsList = []
-        for(i=0; i<eqsGroups.length; i++){
+        for (i=0; i<eqsGroups.length; i++) {
           group = eqsGroups[i]
           eqsList[group] = []
           for(j=0; j<_eqs.length; j++)
           {
             eq = _eqs[j]
+            if (eq.configuration.type != 'intent') continue
             eqGroup = eq.configuration.group
-            if (eqGroup == null) continue
-            if (eqGroup == "") eqGroup = 'Aucun'
+            if (eqGroup == null) eqGroup = '{{Aucun}}'
+            if (eqGroup == "") eqGroup = '{{Aucun}}'
             if (eqGroup.toLowerCase() != group.toLowerCase()) continue
             eqsList[group].push([eq.name, eq.id])
           }
@@ -175,17 +177,19 @@ $('#intentsContainer .eqLogicDisplayCard').off('click').on('click', function () 
 })
 
 //panels:
-$('#devicesPanel .accordion-toggle').off('click').on('click', function () {
-  setTimeout(function(){
-    $('#devicesContainer .eqLogicThumbnailContainer').packery()
-  },100)
-});
-$('#intentsPanels .accordion-toggle').off('click').on('click', function () {
-  $thisContainer = $(this).closest('.panel').find('.eqLogicThumbnailContainer')
-  setTimeout(function() {
-     $thisContainer.packery()
-  }, 100)
-})
+if (coreVersion < 4.2) {
+  $('#devicesPanel .accordion-toggle').off('click').on('click', function () {
+    setTimeout(function(){
+      $('#devicesContainer .eqLogicThumbnailContainer').packery()
+    },100)
+  });
+  $('#intentsPanels .accordion-toggle').off('click').on('click', function () {
+    $thisContainer = $(this).closest('.panel').find('.eqLogicThumbnailContainer')
+    setTimeout(function() {
+       $thisContainer.packery()
+    }, 100)
+  })
+}
 
 //ui:
 $('#bt_loadAssistant').off('click').on('click', function () {
@@ -275,7 +279,7 @@ $('.bt_deleteSat').off('click').on('click', function () {
     if (result) {
       deleteSatellite(_id)
       $('.jeeRhasspyDeviceCard[data-eqlogic_id="'+_id+'"]').remove()
-      $('.eqLogicThumbnailContainer').packery()
+      if (coreVersion < 4.2) $('.eqLogicThumbnailContainer').packery()
     }
   })
 })
