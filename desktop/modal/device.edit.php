@@ -74,7 +74,13 @@ sendVarToJS('eqLogicValues', $eqLogicValues);
   </div>
 <script>
 $(function() {
-  $('.ui-dialog-content #eqlogictab').setValues(eqLogicValues, '.eqLogicAttr')
+	$('.ui-dialog-content #eqlogictab').setValues(eqLogicValues, '.eqLogicAttr')
+
+	$('#md_modal3').dialog({
+	beforeClose: function(event, ui) {
+		addOrUpdateUrl('id', null)
+	}
+	})
 })
 
 $('.ui-dialog-content #bt_eqLogicConfigure').off('click').on('click', function() {
@@ -99,4 +105,7 @@ $('.ui-dialog-content #bt_eqLogicSave').off('click').on('click', function() {
 		}
 	})
 })
+
+
+
 </script>
