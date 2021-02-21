@@ -55,33 +55,39 @@ $('#bt_saveIntentsSummary').off().on('click',function() {
 	saveIntentsSummary()
 })
 
-$("#table_intentsSummary").delegate('.bt_summaryLogScenario', 'click', function () {
-	var scId = $(this).closest('.intent').find('select[data-l3key="scenario"]').val()
+$('#table_intentsSummary').on({
+  'click': function(event) {
+  	var scId = $(this).closest('.intent').find('select[data-l1key="scenario"]').val()
 	if (!scId) return
 	$("#md_modal2").dialog({title: "{{Log d'exécution du scénario}}"})
 	$("#md_modal2").load('index.php?v=d&modal=scenario.log.execution&scenario_id=' + scId).dialog('open')
 	var modal = $('.ui-dialog[aria-describedby="md_modal2"]')
 	modal.css({top: modal.position().top - 20 + "px"})
-})
+  }
+}, '.bt_summaryLogScenario')
 
-$("#table_intentsSummary").delegate('input[data-l2key="isInteract"]', 'change', function() {
-  updateIsInteract($(this).closest('tr').data('id'))
-})
+$('#table_intentsSummary').on({
+  'change': function(event) {
+  	updateIsInteract($(this).closest('tr').data('id'))
+  }
+}, 'input[data-l1key="isInteract"]')
 
 function updateIsInteract(_id) {
 	var _tr = $('tr[data-id="'+_id+'"]')
-	if (_tr.find('input[data-l2key="isInteract"]').prop('checked')) {
-		_tr.find('select[data-l3key="scenario"]').prop('disabled', 'disabled')
-		_tr.find('select[data-l3key="action"]').prop('disabled', 'disabled')
-		_tr.find('input[data-l3key="minConfidence"]').prop('disabled', 'disabled')
+	if (_tr.find('input[data-l1key="isInteract"]').prop('checked')) {
+		_tr.find('select[data-l1key="scenario"]').prop('disabled', 'disabled')
+		_tr.find('select[data-l2key="action"]').prop('disabled', 'disabled')
+		_tr.find('input[data-l2key="minConfidence"]').prop('disabled', 'disabled')
 		_tr.find('.callbackScTagsToggle').prop('disabled', 'disabled')
-		_tr.find('input[data-l3key="user_tags"]').prop('disabled', 'disabled')
+		_tr.find('input[data-l2key="user"]').prop('disabled', 'disabled')
+		_tr.find('.bt_summaryLogScenario').addClass('disabled')
 	} else {
-		_tr.find('select[data-l3key="scenario"]').removeAttr('disabled')
-		_tr.find('select[data-l3key="action"]').removeAttr('disabled')
-		_tr.find('input[data-l3key="minConfidence"]').removeAttr('disabled')
+		_tr.find('select[data-l1key="scenario"]').removeAttr('disabled')
+		_tr.find('select[data-l2key="action"]').removeAttr('disabled')
+		_tr.find('input[data-l2key="minConfidence"]').removeAttr('disabled')
 		_tr.find('.callbackScTagsToggle').removeAttr('disabled')
-		_tr.find('input[data-l3key="user_tags"]').removeAttr('disabled')
+		_tr.find('input[data-l2key="user"]').removeAttr('disabled')
+		_tr.find('.bt_summaryLogScenario').removeClass('disabled')
 	}
 }
 
