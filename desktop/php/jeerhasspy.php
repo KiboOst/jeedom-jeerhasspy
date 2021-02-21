@@ -217,7 +217,7 @@
                   $siteUrl = $_rhasspyUrl;
 
                   $card = '';
-                  $card .= '<div class="jeeRhasspyDeviceCard" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px; min-width:140px;">';
+                  $card .= '<div class="jeeRhasspyDeviceCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" data-site_id="' . $siteId . '" data-site_url="' . $siteUrl . '" style="min-height:123px; min-width:140px;">';
                   $card .= $icon;
                   $card .= '<strong class="name">' . $eqLogic->getName() . '</strong>';
 

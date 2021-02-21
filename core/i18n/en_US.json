@@ -23,7 +23,17 @@
         "Configuration de votre Rhasspy réussie.": "Configuration of your Rhasspy successful.",
         "Intention supprimée: ": "Intent deleted: ",
         "Intention sauvegardée: ": "Intent saved: ",
-        "Êtes-vous sûr de vouloir supprimer cette intention ?": "Are you sure you want to delete this intention ?"
+        "Êtes-vous sûr de vouloir supprimer cette intention ?": "Are you sure you want to delete this intention ?",
+        "Edition de l'équipement": "Equipment edition"
+    },
+    "plugins\/jeerhasspy\/desktop\/modal\/device.edit.php": {
+        "Nom de l'équipement": "Equipment name",
+        "Objet parent": "Parent object",
+        "Catégorie": "Category",
+        "Configuration avancée": "Advanced configuration",
+        "Sauvegarder": "Save",
+        "Activer": "Activate",
+        "Equipement sauvegardé": "Equipment saved"
     },
     "plugins\/jeerhasspy\/desktop\/modal\/intents.summary.php": {
         "401 - Accès non autorisé": "401 - Unauthorized access",

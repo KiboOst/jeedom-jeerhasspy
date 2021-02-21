@@ -308,6 +308,10 @@ $('#bt_deleteIntents').off('click').on('click', function () {
   })
 })
 
+$('.jeeRhasspyDeviceCard').off('click').on('click', function () {
+  $('#md_modal3').dialog({title: "{{Edition de l'équipement}}"}).load('index.php?v=d&plugin=jeerhasspy&modal=device.edit&deviceId='+$(this).attr('data-eqlogic_id')).dialog('open')
+})
+
 $('#bt_showIntentsSummary').off('click').on('click', function () {
   $('#md_modal').dialog({title: "{{Résumé des intentions}}"}).load('index.php?v=d&plugin=jeerhasspy&modal=intents.summary').dialog('open')
 })
@@ -595,8 +599,17 @@ $('a[data-action="returnToThumbnailDisplay"]').on('mouseup', function () {
 })
 
 $(function() {
+  //open intent from url:
   if (is_numeric(getUrlVars('intent'))) {
     var card = $('.eqLogicDisplayCard[data-eqlogic_id='+getUrlVars('intent')+']')
+    if (card.length == 1) {
+      card.click()
+    }
+  }
+
+  //open equipment modal from url:
+  if (is_numeric(getUrlVars('id'))) {
+    var card = $('.jeeRhasspyDeviceCard[data-eqlogic_id='+getUrlVars('id')+']')
     if (card.length == 1) {
       card.click()
     }

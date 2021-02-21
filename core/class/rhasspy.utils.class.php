@@ -435,6 +435,7 @@ class RhasspyUtils
 				$eqMaster->setName('TTS-'.$_deviceName);
 				$eqMaster->setIsVisible(1 );
 				$eqMaster->setIsEnable(1);
+				$eqMaster->setCategory('multimedia', 1);
 				$eqMaster->setObject_id(-1);
 			}
 			$eqMaster->setConfiguration('type', $_type);
@@ -451,6 +452,7 @@ class RhasspyUtils
 				$eqLogic->setName('TTS-'.$_deviceName);
 				$eqLogic->setIsVisible(1);
 				$eqLogic->setIsEnable(1);
+				$eqLogic->setCategory('multimedia', 1);
 				$eqLogic->setObject_id(-1);
 			}
 			$eqLogic->setConfiguration('type', $_type);
