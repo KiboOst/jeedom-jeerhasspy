@@ -115,15 +115,27 @@ class jeerhasspy_intent
         if ($settingsTags['query'] == '1') $tags['#query#'] = $_payload['text'];
         if ($settingsTags['siteid'] == '1') $tags['#siteId#'] = $_payload['site_id'];
 
-        if ($settingsTags['entities'] == '1') {
-            foreach ($_payload['entities'] as $entity) {
-                $tags['#'.$entity['entity'].'#'] = $entity['value'];
-            }
-        }
+        //get slots and entities. slots are always unique, entities can be multiple.
+        $tagValues = array();
         if ($settingsTags['slots'] == '1') {
             foreach ($_payload['slots'] as $slot => $value) {
-                $tags['#'.$slot.'#'] = $value;
+            	$tagValues[$slot] = array($value);
             }
+        }
+
+        if ($settingsTags['entities'] == '1') {
+            foreach ($_payload['entities'] as $entity) {
+            	if (isset($tagValues[$entity['entity']])) {
+            		array_push($tagValues[$entity['entity']], $entity['value']);
+            	} else {
+            		$tagValues[$entity['entity']] = array($entity['value']);
+            	}
+            }
+        }
+
+        foreach ($tagValues as $tag => $arValue) {
+        	$arValue = array_unique($arValue);
+        	$tags['#'.$tag.'#'] = implode(',', $arValue);
         }
 
         RhasspyUtils::logger('out:scenario tags: '.json_encode($tags));
