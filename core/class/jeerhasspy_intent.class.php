@@ -99,7 +99,6 @@ class jeerhasspy_intent
     //Set scenario tags for scenario exec:
     public function get_all_scenario_tags($_payload)
     {
-        RhasspyUtils::logger('in:payload: '.json_encode($_payload));
         $settingsTags = $this->getTags();
         $tags = array();
         $userTags = $settingsTags['user'];

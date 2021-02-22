@@ -34,7 +34,7 @@ class jeerhasspy extends eqLogic {
                     $siteId = explode(',', $payload['siteId'])[0];
                     scenario::setData('rhasspyWakeWord', $payload['modelId']);
                     scenario::setData('rhasspyWakeSiteId', $siteId);
-                    RhasspyUtils::logger('Awake -> set variables: rhasspyWakeWord->'.$payload['modelId'].' | rhasspyWakeSiteId->'.$siteId);
+                    RhasspyUtils::logger('--Awake -> set variables: rhasspyWakeWord->'.$payload['modelId'].' | rhasspyWakeSiteId->'.$siteId);
                 }
                 return;
             }
@@ -48,13 +48,14 @@ class jeerhasspy extends eqLogic {
                 $payload['site_id'] = explode(',', $payload['site_id'])[0];
 
                 if ($intentName != '') {
-                    RhasspyUtils::logger('Intent Recognized: '.json_encode($payload));
+                    RhasspyUtils::logger('--Intent Recognized: '.$payload['text'].' --> '.json_encode($payload['intent']));
+
 
                     $jrIntent = jeerhasspy_intent::byName($intentName);
                     if (is_object($jrIntent) && $jrIntent->getIsEnable() == 1) {
                         //interact
                         if ($jrIntent->getIsInteract()) {
-                            RhasspyUtils::logger('Send query to interact engine!');
+                            RhasspyUtils::logger('--Send query to interact engine!');
                             $reply = interactQuery::tryToReply($payload['text']);
                             if (trim($reply['reply']) != '') {
                                 $_options = array();
@@ -78,7 +79,7 @@ class jeerhasspy extends eqLogic {
                             RhasspyUtils::playFinished($payload['site_id']);
                           }
                         } else {
-                            RhasspyUtils::logger('Minimal confidence not reached: '.$minConfidence);
+                            RhasspyUtils::logger('--Minimal confidence not reached: '.$minConfidence);
                             $speakDefault = true;
                         }
                     } else {
@@ -87,7 +88,7 @@ class jeerhasspy extends eqLogic {
 
                     if ($speakDefault) $_answerToRhasspy['speech']['text'] = config::byKey('defaultTTS', 'jeerhasspy');
                 } else {
-                    RhasspyUtils::logger('Unrecognized payload.');
+                    RhasspyUtils::logger('--Unrecognized payload.');
                 }
                 //always answer to rhasspy:
                 header('Content-Type: application/json');
