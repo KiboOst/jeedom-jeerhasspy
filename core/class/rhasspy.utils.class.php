@@ -405,6 +405,8 @@ class RhasspyUtils
 				$intent = new jeerhasspy_intent();
 				$intent->setName($intentName);
 				$intent->setIsEnable(1);
+				$intent->setScenario('id', '-1');
+				$intent->setScenario('minConfidence', '0');
 				$intent->save();
 			}
 		}

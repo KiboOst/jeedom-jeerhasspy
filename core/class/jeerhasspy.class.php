@@ -50,7 +50,6 @@ class jeerhasspy extends eqLogic {
                 if ($intentName != '') {
                     RhasspyUtils::logger('--Intent Recognized: '.$payload['text'].' --> '.json_encode($payload['intent']));
 
-
                     $jrIntent = jeerhasspy_intent::byName($intentName);
                     if (is_object($jrIntent) && $jrIntent->getIsEnable() == 1) {
                         //interact
@@ -67,20 +66,12 @@ class jeerhasspy extends eqLogic {
                         }
 
                         //callback scenario
-                        $intentScenario = $jrIntent->getScenario();
-                        $minConfidence = 0;
-                        if (isset($intentScenario['minConfidence'])) $minConfidence = floatval($intentScenario['minConfidence']);
-                        if ($minConfidence <= floatval($payload['intent']['confidence'])) {
-                          $_exec = $jrIntent->exec_callback_scenario($payload);
-                          //no scenario executed, if no wakeword_id should be ask answer.
-                          if (!$_exec && $payload['wakeword_id'] != null) {
+                        $_exec = $jrIntent->exec_callback_scenario($payload);
+                        //no scenario executed, if no wakeword_id should be ask answer.
+                        if (!$_exec && $payload['wakeword_id'] != null) {
                             $speakDefault = true;
-                          } else {
-                            RhasspyUtils::playFinished($payload['site_id']);
-                          }
                         } else {
-                            RhasspyUtils::logger('--Minimal confidence not reached: '.$minConfidence);
-                            $speakDefault = true;
+                            RhasspyUtils::playFinished($payload['site_id']);
                         }
                     } else {
                         $speakDefault = true;

@@ -74,24 +74,27 @@ class jeerhasspy_intent
 	//Get intent eq scenario:
     public function exec_callback_scenario($payload=null)
     {
-        $callback_settings = $this->getScenario();
-        if (!is_array($callback_settings)) {
+    	$intentScenario = $this->getScenario();
+    	if (!is_array($intentScenario) || $intentScenario['id'] == '-1') {
             RhasspyUtils::logger('No scenario defined for this intent.');
             return false;
         }
-        $_scenarioId = $callback_settings['id'];
-        $_scenarioAction = $callback_settings['action'];
 
-        if (!is_object(scenario::byId($_scenarioId))) {
-            RhasspyUtils::logger('scenario: id '. $_scenarioId .' does not exist', 'error');
+    	if (floatval($intentScenario['minConfidence']) > floatval($payload['intent']['confidence'])) {
+    		RhasspyUtils::logger('--Minimal confidence not reached: '.$intentScenario['minConfidence'].' > '.$payload['intent']['confidence']);
+    		return false;
+    	}
+
+        if (!is_object(scenario::byId($intentScenario['id']))) {
+            RhasspyUtils::logger('scenario: id '. $intentScenario['id'] .' does not exist', 'error');
             return false;
         } else {
-        	RhasspyUtils::logger('scenario: '.scenario::byId($_scenarioId)->getName());
+        	RhasspyUtils::logger('scenario: '.scenario::byId($intentScenario['id'])->getName());
         }
 
         $options = array();
-        $options['scenario_id'] = $_scenarioId;
-        $options['action'] = $_scenarioAction;
+        $options['scenario_id'] = $intentScenario['id'];
+        $options['action'] = $intentScenario['action'];
         $options['tags'] = $this->get_all_scenario_tags($payload);
 
         return scenarioExpression::createAndExec('action', 'scenario', $options);
