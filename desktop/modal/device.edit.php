@@ -21,18 +21,17 @@ sendVarToJS('eqLogicValues', $eqLogicValues);
 </div>
 <br/><br/>
 <div role="tabpanel" class="tab-pane active" id="eqlogictab">
-	<br/>
 	<form class="form-horizontal">
-	  <fieldset>
-		  <div class="form-group">
+	  	<fieldset style="margin: 0 14px;">
+		  	<div class="form-group">
 			  <label class="col-sm-3 control-label">{{Nom de l'équipement}}</label>
 			  <div class="col-sm-3">
 				  <input type="text" class="eqLogicAttr form-control" data-l1key="id" style="display : none;" />
 				  <input type="text" class="eqLogicAttr form-control" data-l1key="name"/>
 			  </div>
-		  </div>
+		  	</div>
 
-		  <div class="form-group">
+		  	<div class="form-group">
 			  <label class="col-sm-3 control-label" >{{Objet parent}}</label>
 			  <div class="col-sm-3">
 				  <select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
@@ -47,9 +46,9 @@ sendVarToJS('eqLogicValues', $eqLogicValues);
 					?>
 			   </select>
 			 </div>
-		 </div>
+		 	</div>
 
-		 <div class="form-group">
+		 	<div class="form-group">
 			  <label class="col-sm-3 control-label">{{Catégorie}}</label>
 			  <div class="col-sm-9">
 			   <?php
@@ -60,16 +59,16 @@ sendVarToJS('eqLogicValues', $eqLogicValues);
 				  }
 				?>
 			 </div>
-		 </div>
+		 	</div>
 
-		 <div class="form-group">
-		  <label class="col-sm-3 control-label"></label>
-		  <div class="col-sm-9">
-			<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isEnable" checked/>{{Activer}}</label>
-			<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isVisible" checked/>{{Visible}}</label>
-		  </div>
-		</div>
-	  </fieldset>
+		 	<div class="form-group">
+		  		<label class="col-sm-3 control-label"></label>
+		  	<div class="col-sm-9">
+				<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isEnable" checked/>{{Activer}}</label>
+				<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isVisible" checked/>{{Visible}}</label>
+		  	</div>
+			</div>
+	  	</fieldset>
 	</form>
   </div>
 <script>
@@ -79,7 +78,9 @@ $(function() {
 	$('#md_modal3').dialog({
 	beforeClose: function(event, ui) {
 		addOrUpdateUrl('id', null)
-	}
+	},
+	height: 300,
+	position: 'center'
 	})
 })
 
@@ -105,7 +106,5 @@ $('.ui-dialog-content #bt_eqLogicSave').off('click').on('click', function() {
 		}
 	})
 })
-
-
 
 </script>
