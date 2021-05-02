@@ -223,9 +223,9 @@
 
                   $card .= '<br><center>';
                   $card .= '<div class="input-group">';
-                    $card .= '<a class="bt_configure warning" style="padding: 0 6px;" title="{{Configurer le profile Rhasspy.}}"><i class="fas fa-users-cog"></i></a>';
-                    $card .= '<a class="bt_speakTest info" style="padding: 0 6px;" title="{{Test TTS sur le Rhasspy maître.}}"><i class="fas fa-headphones"></i></i></i></a>';
-                    $card .= '<a class="bt_goToDevice roundedRight success" style="padding: 0 6px;" title="{{Ouvrir l\'interface du Rhasspy maître.}}"><i class="fas fa-server"></i></a>';
+                    $card .= '<a class="bt_configure warning" style="padding: 0 6px;" title="{{Configurer le profile Rhasspy.}}"><i class="prevent fas fa-users-cog"></i></a>';
+                    $card .= '<a class="bt_speakTest info" style="padding: 0 6px;" title="{{Test TTS sur le Rhasspy maître.}}"><i class="prevent fas fa-headphones"></i></i></i></a>';
+                    $card .= '<a class="bt_goToDevice roundedRight success" style="padding: 0 6px;" title="{{Ouvrir l\'interface du Rhasspy maître.}}"><i class="prevent fas fa-server"></i></a>';
                   $card .= '</div>';
                   $card .= '</center></div>';
                   echo $card;
@@ -243,10 +243,10 @@
 
                   $card .= '<br><center>';
                   $card .= '<div class="input-group">';
-                    $card .= '<a class="bt_deleteSat roundedLeft danger" style="padding: 0 6px;" title="{{Supprimer ce satellite.}}"><i class="fas fa-minus-circle"></i></a>';
-                    $card .= '<a class="bt_configure warning" style="padding: 0 6px;" title="{{Configurer le profile Rhasspy de ce satellite.}}"><i class="fas fa-users-cog"></i></a>';
-                    $card .= '<a class="bt_speakTest info" style="padding: 0 6px;" title="{{Test TTS sur ce satellite.}}"><i class="fas fa-headphones"></i></i></i></a>';
-                    $card .= '<a class="bt_goToDevice roundedRight success" style="padding: 0 6px;" title="{{Ouvrir l\'interface de ce satellite.}}"><i class="fas fa-server"></i></a>';
+                    $card .= '<a class="bt_deleteSat roundedLeft danger" style="padding: 0 6px;" title="{{Supprimer ce satellite.}}"><i class="prevent fas fa-minus-circle"></i></a>';
+                    $card .= '<a class="bt_configure warning" style="padding: 0 6px;" title="{{Configurer le profile Rhasspy de ce satellite.}}"><i class="prevent fas fa-users-cog"></i></a>';
+                    $card .= '<a class="bt_speakTest info" style="padding: 0 6px;" title="{{Test TTS sur ce satellite.}}"><i class="prevent fas fa-headphones"></i></i></i></a>';
+                    $card .= '<a class="bt_goToDevice roundedRight success" style="padding: 0 6px;" title="{{Ouvrir l\'interface de ce satellite.}}"><i class="prevent fas fa-server"></i></a>';
                   $card .= '</div>';
                   $card .= '</center></div>';
                   echo $card;

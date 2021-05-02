@@ -308,7 +308,8 @@ $('#bt_deleteIntents').off('click').on('click', function () {
   })
 })
 
-$('.jeeRhasspyDeviceCard').off('click').on('click', function () {
+$('.jeeRhasspyDeviceCard').off('click').on('click', function (event) {
+  if (event.originalEvent.target.className.includes('prevent')) return
   $('#md_modal3').dialog({title: "{{Edition de l'équipement}}"}).load('index.php?v=d&plugin=jeerhasspy&modal=device.edit&deviceId='+$(this).attr('data-eqlogic_id')).dialog('open')
 })
 
