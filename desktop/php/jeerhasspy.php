@@ -232,7 +232,7 @@
                 }
                 foreach ($eqLogics as $eqLogic) {
                   if ($eqLogic->getConfiguration('type') != 'satDevice') continue;
-                  $siteId = str_replace('TTS-', '', $eqLogic->getName());
+                  $siteId = str_replace('TTS-', '', $eqLogic->getLogicalId());
                   $icon = '<i class="fas fa-microphone-alt" style="font-size:36px;margin-bottom:5px;"></i><br>Satellite<br>';
                   $siteUrl = $eqLogic->getConfiguration('addr');
 
