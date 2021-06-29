@@ -55,73 +55,86 @@ $('#bt_saveIntentsSummary').off().on('click',function() {
 	saveIntentsSummary()
 })
 
-$("#table_intentsSummary").delegate('.bt_summaryLogScenario', 'click', function () {
-	var scId = $(this).closest('.intent').find('select[data-l3key="scenario"]').val()
+$('#table_intentsSummary').on({
+  'click': function(event) {
+  	var scId = $(this).closest('.intent').find('select[data-l1key="scenario"]').val()
 	if (!scId) return
 	$("#md_modal2").dialog({title: "{{Log d'exécution du scénario}}"})
 	$("#md_modal2").load('index.php?v=d&modal=scenario.log.execution&scenario_id=' + scId).dialog('open')
 	var modal = $('.ui-dialog[aria-describedby="md_modal2"]')
 	modal.css({top: modal.position().top - 20 + "px"})
-})
+  }
+}, '.bt_summaryLogScenario')
 
-$("#table_intentsSummary").delegate('input[data-l2key="isInteract"]', 'change', function() {
-  updateIsInteract($(this).closest('tr').data('id'))
-})
+$('#table_intentsSummary').on({
+  'change': function(event) {
+  	updateIsInteract($(this).closest('tr').data('id'))
+  }
+}, 'input[data-l1key="isInteract"]')
 
 function updateIsInteract(_id) {
 	var _tr = $('tr[data-id="'+_id+'"]')
-	if (_tr.find('input[data-l2key="isInteract"]').prop('checked')) {
-		_tr.find('select[data-l3key="scenario"]').prop('disabled', 'disabled')
-		_tr.find('select[data-l3key="action"]').prop('disabled', 'disabled')
-		_tr.find('input[data-l3key="minConfidence"]').prop('disabled', 'disabled')
+	if (_tr.find('input[data-l1key="isInteract"]').prop('checked')) {
+		_tr.find('select[data-l1key="scenario"]').prop('disabled', 'disabled')
+		_tr.find('select[data-l2key="action"]').prop('disabled', 'disabled')
+		_tr.find('input[data-l2key="minConfidence"]').prop('disabled', 'disabled')
 		_tr.find('.callbackScTagsToggle').prop('disabled', 'disabled')
-		_tr.find('input[data-l3key="user_tags"]').prop('disabled', 'disabled')
+		_tr.find('input[data-l2key="user"]').prop('disabled', 'disabled')
+		_tr.find('.bt_summaryLogScenario').addClass('disabled')
 	} else {
-		_tr.find('select[data-l3key="scenario"]').removeAttr('disabled')
-		_tr.find('select[data-l3key="action"]').removeAttr('disabled')
-		_tr.find('input[data-l3key="minConfidence"]').removeAttr('disabled')
+		_tr.find('select[data-l1key="scenario"]').removeAttr('disabled')
+		_tr.find('select[data-l2key="action"]').removeAttr('disabled')
+		_tr.find('input[data-l2key="minConfidence"]').removeAttr('disabled')
 		_tr.find('.callbackScTagsToggle').removeAttr('disabled')
-		_tr.find('input[data-l3key="user_tags"]').removeAttr('disabled')
+		_tr.find('input[data-l2key="user"]').removeAttr('disabled')
+		_tr.find('.bt_summaryLogScenario').removeClass('disabled')
 	}
 }
 
 function refreshIntentsSummary() {
-	jeedom.eqLogic.byType({
-		type : 'jeerhasspy',
-		error: function (error) {
+	$.ajax({
+		type: "POST",
+		url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
+		data: {
+		  action: "allIntents"
+		},
+		dataType: 'json',
+		error: function(request, status, error) {
 			$('#div_alertIntentsSummary').showAlert({message: error.message, level: 'danger'})
 		},
-		success : function(data){
+		success: function (data) {
+			if (data.state != 'ok') {
+				$('#div_alert').showAlert({message: data.result, level: 'danger'})
+				return
+			 }
+
 			$('#table_intentsSummary tbody').empty()
 			var table = []
-			for(var i in data){
-
-				var intent = data[i]
-				if (intent.configuration.type != 'intent') continue
+			for (var i in data.result) {
+				var intent = data.result[i]
 				var tr = '<tr class="intent" data-id="' + intent.id + '">'
 				tr += '<td>'
-				tr += '<input class="eqLogicAttr hidden" data-l1key="id">'
-				tr += '<input class="eqLogicAttr hidden" data-l1key="configuration" data-l2key="type">'
-				tr += '<span class="eqLogicAttr" data-l1key="name"></span>'
+				tr += '<input class="intentAttr hidden" data-l1key="id">'
+				tr += '<span class="intentAttr" data-l1key="name"></span>'
 				tr += '</td>'
 
 				tr += '<td>'
-				tr += '<center><input type="checkbox" class="eqLogicAttr" data-label-text="{{Actif}}" data-l1key="isEnable"></center>'
+				tr += '<center><input type="checkbox" class="intentAttr" data-label-text="{{Actif}}" data-l1key="isEnable"></center>'
 				tr += '</td>'
 
 				tr += '<td>'
-				tr += '<center><input type="checkbox" class="eqLogicAttr" data-label-text="{{Interact}}" data-l1key="configuration" data-l2key="isInteract"></center>'
+				tr += '<center><input type="checkbox" class="intentAttr" data-label-text="{{Interact}}" data-l1key="isInteract"></center>'
 				tr += '</td>'
 
 				tr += '<td>'
-				tr += '<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="scenario">'
+				tr += '<select class="intentAttr form-control" data-l1key="scenario" data-l2key="id">'
 				tr += '<option value="-1">None</option>'
 				Object.entries(_scenarios).forEach(([key, value]) => tr += '<option value="' + key + '">' + value + '</option>')
 				tr += '</select>'
 				tr += '</td>'
 
 				tr += '<td>'
-				tr += '<select class="eqLogicAttr form-control input-sm" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="action">'
+				tr += '<select class="intentAttr form-control input-sm" data-l1key="scenario" data-l2key="action">'
 				tr += '<option value="start">{{Start}}</option>'
 				tr += '<option value="startsync">{{Start (sync)}}</option>'
 				tr += '<option value="stop">{{Stop}}</option>'
@@ -132,7 +145,7 @@ function refreshIntentsSummary() {
 				tr += '</td>'
 
 				tr += '<td>'
-				tr += ' <input style="width: 100%;" type="number" value="0" min="0" max="1" step="0.1" class="eqLogicAttr input-sm" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="minConfidence" />';
+				tr += ' <input style="width: 100%;" type="number" value="0" min="0" max="1" step="0.1" class="intentAttr input-sm" data-l1key="scenario" data-l2key="minConfidence" />';
 				tr += '</td>'
 
 				tr += '<td>'
@@ -140,19 +153,19 @@ function refreshIntentsSummary() {
 					tr += '<i class="fas fa-tags"></i>&nbsp;&nbsp;&nbsp;<span class="caret"></span>'
 				tr += '</button>'
 				tr += '<ul class="dropdown-menu" role="menu" style="top:unset;left:unset;">'
-					tr += '<li><a tabIndex="-1"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagIntent"/>&nbsp;intent</a></li>'
-					tr += '<li><a tabIndex="-1"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagEntities"/>&nbsp;entities</a></li>'
-					tr += '<li><a tabIndex="-1"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagSlots"/>&nbsp;slots</a></li>'
-					tr += '<li><a tabIndex="-1"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagSiteId"/>&nbsp;siteId</a></li>'
-					tr += '<li><a tabIndex="-1"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagQuery"/>&nbsp;query</a></li>'
-					tr += '<li><a tabIndex="-1"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagConfidence"/>&nbsp;confidence</a></li>'
-					tr += '<li><a tabIndex="-1"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="isTagWakeword"/>&nbsp;wakeword</a></li>'
+					tr += '<li><a tabIndex="-1"><input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="intent"/>&nbsp;intent</a></li>'
+					tr += '<li><a tabIndex="-1"><input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="entities"/>&nbsp;entities</a></li>'
+					tr += '<li><a tabIndex="-1"><input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="slots"/>&nbsp;slots</a></li>'
+					tr += '<li><a tabIndex="-1"><input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="siteid"/>&nbsp;siteId</a></li>'
+					tr += '<li><a tabIndex="-1"><input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="query"/>&nbsp;query</a></li>'
+					tr += '<li><a tabIndex="-1"><input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="confidence"/>&nbsp;confidence</a></li>'
+					tr += '<li><a tabIndex="-1"><input type="checkbox" class="intentAttr" data-l1key="tags" data-l2key="wakeword"/>&nbsp;wakeword</a></li>'
 				tr += '</ul>'
 
 				tr += '</td>'
 
 				tr += '<td>'
-				tr += ' <input style="width: 100%;" class="eqLogicAttr input-sm" data-l1key="configuration" data-l2key="callbackScenario" data-l3key="user_tags" />';
+				tr += ' <input style="width: 100%;" class="intentAttr input-sm" data-l1key="tags" data-l2key="user" />';
 				tr += '</td>'
 
 				tr += '<td>'
@@ -160,7 +173,7 @@ function refreshIntentsSummary() {
 				tr += '</td>'
 
 				var result = $(tr)
-				result.setValues(intent, '.eqLogicAttr')
+				result.setValues(intent, '.intentAttr')
 				table.push(result)
 			}
 			$('#table_intentsSummary tbody').append(table)
@@ -169,24 +182,31 @@ function refreshIntentsSummary() {
 			$('input[data-l2key="isInteract"]').each(function (index, el) {
 				updateIsInteract($(this).closest('tr').data('id'))
 			})
-		}
-	})
+		},
+	  })
 }
 
 function saveIntentsSummary() {
-	var intents = $('#table_intentsSummary tbody .intent').getValues('.eqLogicAttr')
-	intents.forEach(function (intent) {
-		jeedom.eqLogic.save({
-			eqLogics : [intent],
-			type: 'jeerhasspy',
-			error: function (error) {
-				$('#div_alertIntentsSummary').showAlert({message: error.message, level: 'danger'})
-			},
-			success : function(data){
-				$('#div_alertIntentsSummary').showAlert({message: '{{Sauvegarde effectuée}}', level: 'success'});
-			}
-		})
-	})
-	refreshIntentsSummary()
+	var intentsValues = $('#table_intentsSummary tbody .intent').getValues('.intentAttr')
+	$.ajax({
+		type: "POST",
+		url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
+		data: {
+		  action: "saveAllIntents",
+		  intentsValues : json_encode(intentsValues),
+		},
+		dataType: 'json',
+		error: function (request, status, error) {
+			$('#div_alertIntentsSummary').showAlert({message: error.message, level: 'danger'})
+		},
+		success: function (data) {
+		  if (data.state != 'ok') {
+			$('#div_alertIntentsSummary').showAlert({message: error.message, level: 'danger'})
+			return
+		  }
+		  $('#div_alertIntentsSummary').showAlert({message: '{{Sauvegarde effectuée}}', level: 'success'});
+		  refreshIntentsSummary()
+		},
+	  })
 }
 </script>
