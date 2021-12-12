@@ -38,9 +38,15 @@
   }
   $scenarios = scenario::all();
 
+
+  if (version_compare(jeedom::version(), "4.2.3", ">=")) {
+    $apiType = 'event';
+  } else {
+    $apiType = 'jeerhasspy';
+  }
   $_rhasspyUrl = config::byKey('rhasspyAddr', 'jeerhasspy').':'.config::byKey('rhasspyPort', 'jeerhasspy');
-  $_internalURL = network::getNetworkAccess('internal') . '/core/api/jeeApi.php?plugin=jeerhasspy&apikey=' . jeedom::getApiKey($plugin->getId()) . '&plugin=jeerhasspy&type=jeerhasspy';
-  $_externalURL = network::getNetworkAccess('external') . '/core/api/jeeApi.php?plugin=jeerhasspy&apikey=' . jeedom::getApiKey($plugin->getId()) . '&plugin=jeerhasspy&type=jeerhasspy';
+  $_internalURL = network::getNetworkAccess('internal') . '/core/api/jeeApi.php?apikey=' . jeedom::getApiKey($plugin->getId()) . '&plugin=jeerhasspy&type='.$apiType;
+  $_externalURL = network::getNetworkAccess('external') . '/core/api/jeeApi.php?apikey=' . jeedom::getApiKey($plugin->getId()) . '&plugin=jeerhasspy&type='.$apiType;
 
   //load all intents data:
   $dataIntents = jeedom::toHumanReadable(utils::o2a($rhasspyIntents));
