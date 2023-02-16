@@ -216,7 +216,7 @@ $(function() {
         },
       })
 
-      addOrUpdateUrl('intent', thisId)
+      jeedomUtils.addOrUpdateUrl('intent', thisId)
       $.hideLoading()
       modifyWithoutSave = false
     }
@@ -309,7 +309,6 @@ $('#bt_deleteIntents').off('click').on('click', function () {
 })
 
 $('.jeeRhasspyDeviceCard').off('click').on('click', function (event) {
-  if (event.originalEvent.target.className.includes('prevent')) return
   $('#md_modal3').dialog({title: "{{Edition de l'équipement}}"}).load('index.php?v=d&plugin=jeerhasspy&modal=device.edit&deviceId='+$(this).attr('data-eqlogic_id')).dialog('open')
 })
 
@@ -549,7 +548,7 @@ $('#bt_intentRemove').off('click').on('click', function () {
             return
           }
           $('.eqLogicDisplayCard[data-eqlogic_id='+thisId+']').remove()
-          addOrUpdateUrl('intent', null)
+          jeedomUtils.addOrUpdateUrl('intent', null)
           $('a[data-action="returnToThumbnailDisplay"]').click()
           $('#div_alert').showAlert({message: '{{Intention supprimée: }}'+data.result, level: 'success'})
         },
@@ -596,7 +595,7 @@ $('.bt_logScenario').off('click').on('click', function () {
 //integrate some core features for intent instead of core eqlogic id:
 $('a[data-action="returnToThumbnailDisplay"]').on('mouseup', function () {
   $.hideAlert()
-  addOrUpdateUrl('intent', null)
+  jeedomUtils.addOrUpdateUrl('intent', null)
 })
 
 $(function() {
@@ -610,9 +609,14 @@ $(function() {
 
   //open equipment modal from url:
   if (is_numeric(getUrlVars('id'))) {
+    setTimeout(() => {
+      $('#intentPage').hide()
+      $('div.eqLogicThumbnailDisplay').show()
+      $('#devicesContainer').addClass('in')
+    })
     var card = $('.jeeRhasspyDeviceCard[data-eqlogic_id='+getUrlVars('id')+']')
     if (card.length == 1) {
-      card.click()
+      $('#md_modal3').dialog({title: "{{Edition de l'équipement}}"}).load('index.php?v=d&plugin=jeerhasspy&modal=device.edit&deviceId='+getUrlVars('id')).dialog('open')
     }
   }
 })

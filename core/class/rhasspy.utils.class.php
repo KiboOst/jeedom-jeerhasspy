@@ -8,7 +8,7 @@ class RhasspyUtils
 
 	public function getURI($_siteId=null)
 	{
-		$_uri = None;
+		$_uri = NULL;
 		if (is_null($_siteId) || $_siteId == config::byKey('masterSiteId', 'jeerhasspy')) {
 			$Addr = config::byKey('rhasspyAddr', 'jeerhasspy');
 			if (substr($Addr, 0, 4) != 'http') $Addr = 'http://'.$Addr;
@@ -22,7 +22,7 @@ class RhasspyUtils
 				if ($eqLogic->getLogicalId() == 'TTS-'.$_siteId) $_uri = $eqLogic->getConfiguration('addr');
 			}
 		}
-		if (($_uri==None) && ($_siteId != config::byKey('masterSiteId', 'jeerhasspy'))) self::getURI(config::byKey('masterSiteId', 'jeerhasspy'));
+		if (($_uri==NULL) && ($_siteId != config::byKey('masterSiteId', 'jeerhasspy'))) self::getURI(config::byKey('masterSiteId', 'jeerhasspy'));
 		return $_uri;
 	}
 
