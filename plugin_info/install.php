@@ -66,7 +66,6 @@ function jeerhasspy_update() {
 	if (is_object($obj)) {
 		$obj->remove();
 	}
-	include((dirname(__FILE__) . '/formulaire.config.php'));
 	config::remove('intentObjectId', 'jeerhasspy');
 }
 

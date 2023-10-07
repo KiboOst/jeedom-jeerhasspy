@@ -26,8 +26,6 @@ try {
 		throw new Exception(__('401 - Accès non autorisé', __FILE__));
 	}
 
-	ajax::init();
-
 	if (init('action') == 'loadAssistant') {
 		$_cleanIntents = init('mode', null);
 		$result = RhasspyUtils::loadAssistant($_cleanIntents);
