@@ -2,7 +2,9 @@
 class Model {
 
 	public static function loadCom($uri,$headers=[],$data=null,$timeout=5) {
-		$request_http = new com_http(self::geturl($uri));
+		$url = config::byKey('rhasspyAddr', 'jeerhasspy');
+		$port = config::byKey('rhasspyPort', 'jeerhasspy');
+		$request_http = new com_http("http://".$url.":".$port . "" . $uri);
 		$request_http->setLogError(false);
 		$request_http->setPost($data);
 		$request_http->setHeader($headers);
@@ -13,17 +15,6 @@ class Model {
 		log::add('jeerhasspy','debug',$request_http->getUrl());
 		log::add('jeerhasspy','debug',$result);
 		return $result;
-	}
-
-	public static function geturl($uri) {
-		try {
-			$url = config::byKey('rhasspyAddr', 'jeerhasspy');
-			$port = config::byKey('rhasspyPort', 'jeerhasspy');
-			return "http://".$url.":".$port . "" . $uri;
-		} catch (Exception $e) {
-			log::add('jeerhasspy', 'debug', "Une erreur s'est produite lors de la récupération de l'url : " . $e);
-			return "http://192.168.2.52:12101".$uri;
-		}
 	}
 
 	public static function trainRhasspyModel() {
@@ -149,7 +140,7 @@ class Model {
 			$exist_intent[$key][] = "commande = (" . implode(' | ', $value["build_phrase"][1]) . "){commande}";
 			$exist_intent[$key][] = "equipement = ($" . $key . "_equipement){equipement}";
 			$exist_intent[$key][] = "objet = ($" . $key . "_objet){objet}";
-			$exist_intent[$key][] = "phrase_demande = (" . str_replace("] [", "|", implode(' ', $value["build_phrase"][0])) . "){phrase_demande}";
+			$exist_intent[$key][] = "phrase_demande = (" . str_replace("] [", "|", implode(' ', $value["build_phrase"][0])) . ")";
 			$exist_intent[$key][] = "<phrase_demande>";
 			$exist_slot[$key . '_equipement'] = $value['nom_equipement'];
 			foreach ($value['custom_word'] as $i => $word) {
