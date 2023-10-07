@@ -19,6 +19,7 @@
 try {
 	require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
 	require_once dirname(__FILE__) . '/../class/rhasspy.utils.class.php';
+	require_once dirname(__FILE__) . '/../class/buildmodel.class.php';
 
 	include_file('core', 'authentification', 'php');
 	if (!isConnect('admin')) {
@@ -123,6 +124,32 @@ try {
 			$intent->remove();
 			ajax::success($intentName);
 		}
+	}
+
+	if (init('action') == 'buildmodel'){
+		$intentformdata = json_decode(init('intents'), true);
+		$result = Model::buildModel($intentformdata); // creation des intent dans jeedom et rhasspy
+		if (isset($result['error']) ) {
+			ajax::error($result['error']);
+		}
+		log::add('jeerhasspy', 'debug', 'syncronisation des intents avec jeerhasspy');
+		$result = RhasspyUtils::loadAssistant(); // synchronisation des intents de rhasspy avec le plugin jeerhasspy
+		if (isset($result['error']) ) {
+			ajax::error($result['error']);
+		}
+		log::add('jeerhasspy', 'debug', 'activation des intents du plugin pris en charge par le formulaire, en mode interaction');
+		foreach ($intentformdata as $i => $intent) { // activation des intents du plugin pris en charge par le formulaire, en mode interaction
+			$intentobject = jeerhasspy_intent::byName($i);
+			if (is_object($intentobject)) {
+				$intentjson = jeedom::toHumanReadable(utils::o2a($intentobject));
+				$intentjson["configuration"]["group"] = "rhasspybuild";
+				utils::a2o($intentobject, jeedom::fromHumanReadable($intentjson));
+				$intentobject->setIsInteract(1);
+				$intentobject->setIsEnable(1);
+				$intentobject->save();
+			}
+		}
+		ajax::success();
 	}
 
 	throw new Exception(__('Aucune méthode correspondante à : ', __FILE__) . init('action'));
