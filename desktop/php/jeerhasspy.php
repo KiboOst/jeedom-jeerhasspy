@@ -121,6 +121,10 @@
         <i class="fas fa-list"></i>
         <span class="txtColor"><center>{{Vue d'ensemble}}</center></span>
       </div>
+      <div id="bt_showBuildIntentsSummary" class="cursor eqLogicAction logoSecondary">
+        <i class="fas fa-list"></i>
+        <span class="txtColor"><center>{{gestion assistant}}</center></span>
+      </div>
       <div id="bt_deleteIntents" class="cursor eqLogicAction warning">
         <i class="far fa-trash-alt"></i>
         <br>

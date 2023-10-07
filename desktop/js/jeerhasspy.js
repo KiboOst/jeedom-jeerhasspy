@@ -316,6 +316,10 @@ $('#bt_showIntentsSummary').off('click').on('click', function () {
   $('#md_modal').dialog({title: "{{Résumé des intentions}}"}).load('index.php?v=d&plugin=jeerhasspy&modal=intents.summary').dialog('open')
 })
 
+$('#bt_showBuildIntentsSummary').off('click').on('click', function () {
+  $('#md_modal').dialog({title: "{{Crée vos modèles}}"}).load('index.php?v=d&plugin=jeerhasspy&modal=createintents.summary').dialog('open')
+})
+
 //UI devices:
 $('.bt_deleteSat').off('click').on('click', function () {
   $.hideAlert()

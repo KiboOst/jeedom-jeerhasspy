@@ -21,11 +21,13 @@ require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 function jeerhasspy_install() {
 	$sql = file_get_contents(dirname(__FILE__) . '/install.sql');
     DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
+	include((dirname(__FILE__) . '/formulaire.config.php'));
 }
 
 function jeerhasspy_update() {
 	$sql = file_get_contents(dirname(__FILE__) . '/install.sql');
     DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
+	include((dirname(__FILE__) . '/formulaire.config.php'));
 
     $eqLogics = eqLogic::byType('jeerhasspy');
 	foreach ($eqLogics as $eqLogic) {
@@ -64,6 +66,7 @@ function jeerhasspy_update() {
 	if (is_object($obj)) {
 		$obj->remove();
 	}
+	include((dirname(__FILE__) . '/formulaire.config.php'));
 	config::remove('intentObjectId', 'jeerhasspy');
 }
 
