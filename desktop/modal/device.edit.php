@@ -77,7 +77,7 @@ $(function() {
 
 	$('#md_modal3').dialog({
 	beforeClose: function(event, ui) {
-		addOrUpdateUrl('id', null)
+		jeedomUtils.addOrUpdateUrl('id', null)
 	},
 	height: 300,
 	position: 'center'
