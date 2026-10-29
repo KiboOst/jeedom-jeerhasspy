@@ -317,7 +317,8 @@ $('#bt_showIntentsSummary').off('click').on('click', function () {
 })
 
 //UI devices:
-$('.bt_deleteSat').off('click').on('click', function () {
+$('.bt_deleteSat').off('click').on('click', function (event) {
+  event.stopPropagation()
   $.hideAlert()
   var _id = $(this).closest('.jeeRhasspyDeviceCard').data('eqlogic_id')
   bootbox.confirm('{{Êtes-vous sûr de vouloir supprimer ce satellite ?}}', function (result) {
@@ -329,7 +330,8 @@ $('.bt_deleteSat').off('click').on('click', function () {
   })
 })
 
-$('.bt_configure').off('click').on('click', function () {
+$('.bt_configure').off('click').on('click', function (event) {
+  event.stopPropagation()
   $.hideAlert()
   var siteId = $(this).closest('.jeeRhasspyDeviceCard').data('site_id')
   var form = $("#configDeviceFormContainer").html();
@@ -346,7 +348,8 @@ $('.bt_configure').off('click').on('click', function () {
   })
 })
 
-$('.bt_speakTest').off('click').on('click', function () {
+$('.bt_speakTest').off('click').on('click', function (event) {
+  event.stopPropagation()
   $.hideAlert()
   var site_id = $(this).closest('.jeeRhasspyDeviceCard').data('site_id')
   $.ajax({
@@ -369,7 +372,8 @@ $('.bt_speakTest').off('click').on('click', function () {
   })
 })
 
-$('.bt_goToDevice').off('click').on('click', function () {
+$('.bt_goToDevice').off('click').on('click', function (event) {
+  event.stopPropagation()
   $.hideAlert()
   window.open($(this).closest('.jeeRhasspyDeviceCard').data('site_url')).focus()
 })

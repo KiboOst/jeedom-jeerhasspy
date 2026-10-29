@@ -6,7 +6,7 @@ class RhasspyUtils
 	protected static $_curlHdl = null;
 	protected static $_uri = false;
 
-	public function getURI($_siteId=null)
+	public static function getURI($_siteId=null)
 	{
 		$_uri = NULL;
 		if (is_null($_siteId) || $_siteId == config::byKey('masterSiteId', 'jeerhasspy')) {
@@ -22,7 +22,13 @@ class RhasspyUtils
 				if ($eqLogic->getLogicalId() == 'TTS-'.$_siteId) $_uri = $eqLogic->getConfiguration('addr');
 			}
 		}
-		if (($_uri==NULL) && ($_siteId != config::byKey('masterSiteId', 'jeerhasspy'))) self::getURI(config::byKey('masterSiteId', 'jeerhasspy'));
+		if (
+		    $_uri === null
+		    && $_siteId != config::byKey('masterSiteId', 'jeerhasspy')
+		) {
+		    return self::getURI(config::byKey('masterSiteId', 'jeerhasspy'));
+		}
+
 		return $_uri;
 	}
 
@@ -31,11 +37,11 @@ class RhasspyUtils
 		if (is_array($str)) $str = json_encode($str);
 		$function_name = debug_backtrace(false, 2)[1]['function'];
 		$class_name = debug_backtrace(false, 2)[1]['class'];
-		$msg = '['.$class_name.'] '. $function_name .'() '.$str;
+		$msg = '['.$class_name.'] '. $function_name .'() > '.$str;
 		log::add('jeerhasspy', $level, $msg);
 	}
 
-	public function loadAssistant($_cleanIntents="0") #called from ajax -> /api/...
+	public static function loadAssistant($_cleanIntents="0") #called from ajax -> /api/...
 	{
 		self::logger('cleanIntents: '.$_cleanIntents);
 		$_uri = self::getURI();
@@ -98,7 +104,7 @@ class RhasspyUtils
 		}
 	}
 
-	public function deleteIntents()
+	public static function deleteIntents()
 	{
 		$intents = jeerhasspy_intent::all();
 		foreach ($intents as $intent) {
@@ -106,21 +112,25 @@ class RhasspyUtils
 		}
 	}
 
-	public function test($_siteId=null) #called from ajax
+	public static function test($_siteId=null)
 	{
-		self::logger('_siteId: '.$_siteId);
-		$_options = array(
-			'title' => $_siteId,
-			'message' => null,
-		);
-		$result = self::textToSpeech($_options, null, $_siteId);
-		if ( isset($result['error']) ) {
-			return $result;
-		}
-		return true;
+	    self::logger('_siteId: '.$_siteId);
+
+	    $_options = [
+	        'title'   => $_siteId,
+	        'message' => null,
+	    ];
+
+	    if (self::textToSpeech($_options) !== true) {
+	        return [
+	            'error' => __('Échec du test de synthèse vocale.', __FILE__),
+	        ];
+	    }
+
+	    return true;
 	}
 
-	public function evalDynamicString($_string)
+	public static function evalDynamicString($_string)
 	{
 		if (strpos($_string, '{') !== false AND strpos($_string, '}') !== false)
 		{
@@ -153,14 +163,14 @@ class RhasspyUtils
 				}
 
 				return $_string;
-			} catch (Exception $e) {
+			} catch (Throwable $e) {
 				return $_string;
 			}
 		}
 		else return $_string;
 	}
 
-	public function sanitizeString($_string) {
+	public static function sanitizeString($_string) {
 		$lang = config::byKey('defaultLang', 'jeerhasspy');
 
 		if ($lang == 'fr') {
@@ -172,10 +182,29 @@ class RhasspyUtils
 		return $_string;
 	}
 
+	public static function setGlobalVariable($name, $value)
+	{
+	    $variable = dataStore::byTypeLinkIdKey('scenario', -1, $name);
+
+	    if (!is_object($variable)) {
+	        $variable = new dataStore();
+	        $variable->setType('scenario');
+	        $variable->setLinkId(-1);
+	        $variable->setKey($name);
+	    }
+
+	    $variable->setValue($value);
+	    $variable->save();
+	}
+
 	/* Calling HTTP API functions */
-	public function textToSpeech($_options=null) #api/text-to-speech (siteId | lang)
+	public static function textToSpeech($_options=null) #api/text-to-speech (siteId | lang)
 	{
 		if (!is_array($_options)) return;
+		$_options += [
+		    'title'   => '',
+		    'message' => null,
+		];
 		//get either siteId/lang or get master one:
 		$_lang = null;
 		$_siteId = null;
@@ -242,7 +271,7 @@ class RhasspyUtils
 		return true;
 	}
 
-	public function speakToAsk($_siteId=null, $_options=null) #api/listen-for-command (entity) | get direct curl answer to set variable
+	public static function speakToAsk($_siteId=null, $_options=null) #api/listen-for-command (entity) | get direct curl answer to set variable
 	{
 		if (!is_array($_options)) return;
 		$_uri = self::getURI($_siteId);
@@ -275,20 +304,20 @@ class RhasspyUtils
                     }
                 }
                 if ($answer) {
-                	scenario::setData($answerVariable, $answer);
+                	self::setGlobalVariable($answerVariable, $answer);
                     self::logger('Ask answer received, set answer variable: '.$answer);
                 }
             }
 		}
 		if (!$answer) {
-			scenario::setData($answerVariable, '--No Answer--');
+			self::setGlobalVariable($answerVariable, '--No Answer--');
 			self::logger('Ask answer not received');
 		}
 
 		return true;
 	}
 
-	public function setLEDs($_state=1, $_siteId=null) #/api/mqtt/hermes/ (topic)
+	public static function setLEDs($_state=1, $_siteId=null) #/api/mqtt/hermes/ (topic)
 	{
 		if (is_null($_siteId) || $_siteId == '') {
 			$_siteId = config::byKey('masterSiteId', 'jeerhasspy');
@@ -309,7 +338,7 @@ class RhasspyUtils
 		return true;
 	}
 
-	public function setVolume($_level=100, $_siteId=null) #/api/set-volume (siteId | level)
+	public static function setVolume($_level=100, $_siteId=null) #/api/set-volume (siteId | level)
 	{
 		if (is_null($_siteId) || $_siteId == '') {
 			$_siteId = config::byKey('masterSiteId', 'jeerhasspy');
@@ -333,7 +362,7 @@ class RhasspyUtils
 		return true;
 	}
 
-	public function repeatTTS($_siteId=null) #/api/text-to-speech?repeat=true&siteId= (siteId)
+	public static function repeatTTS($_siteId=null) #/api/text-to-speech?repeat=true&siteId= (siteId)
 	{
 		if (is_null($_siteId) || $_siteId == '') {
 			$_siteId = config::byKey('masterSiteId', 'jeerhasspy');
@@ -343,7 +372,7 @@ class RhasspyUtils
 
 		self::logger('jeeRhasspy:repeatTTS  -> '.$url);
 
-		$answer = self::_request('POST', $url, $_level);
+		$answer = self::_request('POST', $url);
 		if ( isset($answer['error']) ) {
 			self::logger('jeeRhasspy:repeatTTS error -> '.$answer['error'], 'error');
 			return false;
@@ -351,7 +380,7 @@ class RhasspyUtils
 		return true;
 	}
 
-	public function playFinished($_siteId=null) #/api/mqtt/hermes/ (topic)
+	public static function playFinished($_siteId=null) #/api/mqtt/hermes/ (topic)
 	{
 		if (is_null($_siteId) || $_siteId == '') {
 			$_siteId = config::byKey('masterSiteId', 'jeerhasspy');
@@ -373,7 +402,7 @@ class RhasspyUtils
 
 
 	/* * ***************************Create Jeedom object, eqlogics, commands********************************* */
-	public function createIntents($_intentsNames='', $_cleanIntents="0")
+	public static function createIntents($_intentsNames='', $_cleanIntents="0")
 	{
 		self::logger(json_encode($_intentsNames));
 		$filterIntents = config::byKey('filterJeedomIntents', 'jeerhasspy');
@@ -412,7 +441,7 @@ class RhasspyUtils
 		}
 	}
 
-	public function createDevice($_deviceName='', $_type='masterDevice',  $_fullUrl=null)
+	public static function createDevice($_deviceName='', $_type='masterDevice',  $_fullUrl=null)
 	{
 		self::logger($_deviceName.' | '.$_type.' | '.$_fullUrl);
 		if ($_deviceName == '') return false;
@@ -602,7 +631,7 @@ class RhasspyUtils
 		$repeatCmd->save();
 	}
 
-	public function addSatellite($_adrss) #called from ajax
+	public static function addSatellite($_adrss) #called from ajax
 	{
 		self::logger($_adrss);
 
@@ -635,14 +664,14 @@ class RhasspyUtils
 	}
 
 	/* * **********************************Modify Rhasspy user profile**************************************** */
-	public function configureRhasspyProfile($_siteId, $_url, $_configRemote=True, $_configWake=False) #called from ajax
+	public static function configureRhasspyProfile($_siteId, $_url, $_configRemote=True, $_configWake=False) #called from ajax
 	{
 		self::logger($_siteId.' _configRemote: '.$_configRemote.' _configWake: '.$_configWake);
 		self::logger('_url: '.$_url);
 		$_uri = self::getURI($_siteId);
 		$url = $_uri.'/api/profile?layers=profile';
 		$profile = self::_request('GET', $url);
-		if ( isset($answer['error']) ) {
+		if ( isset($profile['error']) ) {
 			$answer['error'] = __('Impossible de se connecter à ce Rhasspy.', __FILE__);
 			return $answer;
 		}
@@ -687,7 +716,7 @@ class RhasspyUtils
 	}
 
 	//CALLING FUNCTIONS===================================================
-	protected function _request($method, $url, $post=null)
+	protected static function _request($method, $url, $post=null)
 	{
 		self::logger($method.' | '.$url.' | '.$post);
 		//init curl handle if necessary:

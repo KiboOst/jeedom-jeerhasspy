@@ -32,8 +32,8 @@ class jeerhasspy extends eqLogic {
             if (isset($payload['modelId']) && !isset($payload['intent'])) {
                 if (config::byKey('setWakeVariables', 'jeerhasspy') == '1') {
                     $siteId = explode(',', $payload['siteId'])[0];
-                    scenario::setData('rhasspyWakeWord', $payload['modelId']);
-                    scenario::setData('rhasspyWakeSiteId', $siteId);
+                    RhasspyUtils::setGlobalVariable('rhasspyWakeWord', $payload['modelId']);
+                    RhasspyUtils::setGlobalVariable('rhasspyWakeSiteId', $siteId);
                     RhasspyUtils::logger('--Awake -> set variables: rhasspyWakeWord->'.$payload['modelId'].' | rhasspyWakeSiteId->'.$siteId);
                 }
                 return;
@@ -68,7 +68,7 @@ class jeerhasspy extends eqLogic {
                         //callback scenario
                         $_exec = $jrIntent->exec_callback_scenario($payload);
                         //no scenario executed, if no wakeword_id should be ask answer.
-                        if (!$_exec && $payload['wakeword_id'] != null) {
+                        if (!$_exec && ($payload['wakeword_id'] ?? null) !== null) {
                             $speakDefault = true;
                         } else {
                             RhasspyUtils::playFinished($payload['site_id']);
@@ -135,6 +135,11 @@ class jeerhasspyCmd extends cmd {
 
     public function speak($options=array())
     {
+        $options += [
+            'title'   => '',
+            'message' => null,
+        ];
+
         $eqName = $this->getEqLogic()->getLogicalId();
         $siteId = str_replace('TTS-', '', $eqName);
         RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
@@ -148,6 +153,10 @@ class jeerhasspyCmd extends cmd {
 
     public function dynamicSpeak($options=array())
     {
+        $options += [
+            'title'   => '',
+            'message' => null,
+        ];
         $eqName = $this->getEqLogic()->getLogicalId();
         $siteId = str_replace('TTS-', '', $eqName);
         RhasspyUtils::logger(json_encode($options).' siteId: '.$siteId);
