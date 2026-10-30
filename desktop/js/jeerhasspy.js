@@ -184,51 +184,72 @@ if (coreVersion < 4.2) {
   })
 }
 
-//Remove core displayCard events:
+// Remove core displayCard events:
+// Remove core displayCard events:
 $(function() {
-  $(".eqLogicDisplayCard").off('click').on('click', function(event) {
-    $.hideAlert()
-    if (event.ctrlKey) {
-      var type = $('body').attr('data-page')
-      var url = 'index.php?v=d&m='+type+'&p='+type+'&id='+$(this).attr('data-eqlogic_id')
-      window.open(url).focus()
-    } else {
-      $('.eqLogicThumbnailDisplay').hide()
-      $(this).addClass('active')
-      $('.nav-tabs a:not(.eqLogicAction)').first().click()
-      $.showLoading()
-      var thisId = $(this).attr('data-eqLogic_id')
-      $('#intentPage').show()
+  var $container = $('#jeeRhasspyContainer')
 
-      $.ajax({
-        type: "POST",
-        url: "plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php",
-        data: {
-          action: "byId",
-          intentId: thisId
-        },
-        dataType: 'json',
-        error: function(request, status, error) {
-          handleAjaxError(request, status, error)
-        },
-        success: function (data) {
-          $('#eqlogictab').setValues(data.result, '.intentAttr')
-        },
-      })
+  $container.find('.eqLogicDisplayCard').off('click mouseup')
+  $container.off('.jeeRhasspyCard')
 
-      jeedomUtils.addOrUpdateUrl('intent', thisId)
-      $.hideLoading()
-      modifyWithoutSave = false
+  function openInNewTab(id) {
+    var tab = window.open('index.php?v=d&m=jeerhasspy&p=jeerhasspy&intent=' + id, '_blank')
+    if (tab) tab.focus()
+  }
+
+  $container.on('click.jeeRhasspyCard', '.eqLogicDisplayCard', function(event) {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+
+    var thisId = $(this).attr('data-eqlogic_id')
+
+    if (event.ctrlKey || event.metaKey) {
+      openInNewTab(thisId)
+      return
     }
-    return false
+
+    $.hideAlert()
+    $container.find('.eqLogicDisplayCard').removeClass('active')
+    $(this).addClass('active')
+    $('.eqLogicThumbnailDisplay').hide()
+    $('#intentPage').removeClass('hidden').show()
+    document.querySelector('#intentPage a[href="#eqlogictab"]').click()
+    $.showLoading()
+
+    $.ajax({
+      type: 'POST',
+      url: 'plugins/jeerhasspy/core/ajax/jeerhasspy.ajax.php',
+      data: {action: 'byId', intentId: thisId},
+      dataType: 'json',
+      error: function(request, status, error) {
+        handleAjaxError(request, status, error)
+      },
+      success: function(data) {
+        if (data.state != 'ok') {
+          $('#div_alert').showAlert({message: data.result, level: 'danger'})
+          return
+        }
+        $('#eqlogictab').setValues(data.result, '.intentAttr')
+        jeedomUtils.addOrUpdateUrl('intent', thisId)
+        modifyWithoutSave = false
+      },
+      complete: function() {
+        $.hideLoading()
+      }
+    })
   })
 
-  $('.eqLogicDisplayCard').off('mouseup').on('mouseup', function(event) {
-    if( event.which == 2 ) {
-      event.preventDefault()
-      var id = $(this).attr('data-eqlogic_id')
-      $('.eqLogicDisplayCard[data-eqlogic_id="'+id+'"]').trigger(jQuery.Event('click', {ctrlKey: true}))
-    }
+  $container.on('mouseup.jeeRhasspyCard', '.eqLogicDisplayCard', function(event) {
+    if (event.which != 2) return
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    openInNewTab($(this).attr('data-eqlogic_id'))
+  })
+
+  $container.on('auxclick.jeeRhasspyCard', '.eqLogicDisplayCard', function(event) {
+    if (event.button != 1) return
+    event.preventDefault()
+    event.stopImmediatePropagation()
   })
 })
 
@@ -613,14 +634,18 @@ $(function() {
 
   //open equipment modal from url:
   if (is_numeric(getUrlVars('id'))) {
+    var eqId = getUrlVars('id')
+    var btn = document.querySelector('a.eqLogicAction[data-action="returnToThumbnailDisplay"]')
+    if (btn) {
+      btn.click()
+    }
     setTimeout(() => {
-      $('#intentPage').hide()
       $('div.eqLogicThumbnailDisplay').show()
       $('#devicesContainer').addClass('in')
+      var card = $('.jeeRhasspyDeviceCard[data-eqlogic_id="' + eqId + '"]')
+      if (card.length == 1) {
+        $('#md_modal3').dialog({title: "{{Edition de l'équipement}}"}).load('index.php?v=d&plugin=jeerhasspy&modal=device.edit&deviceId='+eqId).dialog('open')
+      }
     })
-    var card = $('.jeeRhasspyDeviceCard[data-eqlogic_id='+getUrlVars('id')+']')
-    if (card.length == 1) {
-      $('#md_modal3').dialog({title: "{{Edition de l'équipement}}"}).load('index.php?v=d&plugin=jeerhasspy&modal=device.edit&deviceId='+getUrlVars('id')).dialog('open')
-    }
   }
 })
