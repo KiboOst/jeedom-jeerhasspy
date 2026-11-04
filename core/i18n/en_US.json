@@ -65,7 +65,8 @@
         "Impossible de se connecter à ce satellite.": "Could not connect to this satellite!",
         "Impossible de récupérer le siteId de ce satellite.": "Could not get siteId from this satellite.",
         "Impossible de se connecter à ce Rhasspy.": "Could not connect to Rhasspy!",
-        "Impossible d'appliquer les paramètres à ce Rhasspy.": "Could not apply new settings to this Rhasspy!"
+        "Impossible d'appliquer les paramètres à ce Rhasspy.": "Could not apply new settings to this Rhasspy!",
+        "Échec du test de synthèse vocale.": "Vocal test failed."
     },
     "plugins\/jeerhasspy\/desktop\/php\/jeerhasspy.php": {
         "401 - Accès non autorisé": "401 - Unauthorized access",

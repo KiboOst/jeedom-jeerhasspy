@@ -99,7 +99,7 @@
 ?>
 
 <div class="row row-overflow">
-  <div class="col-xs-12 eqLogicThumbnailDisplay">
+  <div id="jeeRhasspyContainer" class="col-xs-12 eqLogicThumbnailDisplay">
     <legend><i class="fa fa-cog"></i> {{Gestion}}</legend>
     <div class="eqLogicThumbnailContainer">
       <div class="cursor eqLogicAction logoSecondary" data-action="gotoPluginConf">
